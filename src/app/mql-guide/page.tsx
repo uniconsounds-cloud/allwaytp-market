@@ -10,38 +10,26 @@ export default function MqlGuidePage() {
   const [copied3, setCopied3] = useState(false);
 
   const snippet1 = `// ============================================================
-// >>> START COPY TO EA (ส่วนที่ 1: Include Header) >>>
+// >>> START COPY TO EA (ส่วนที่ 1: กำหนดรหัส EA และ Include) >>>
 // ============================================================
+#define ALLWAYTP_EA_CODE "RECON_100" // <-- ระบุรหัส EA จุดนี้จุดเดียวเท่านั้น!
 #include <AllwayTP_License.mqh>
 // ============================================================
 // <<< END COPY TO EA (สิ้นสุดส่วนที่ 1) <<<
 // ============================================================`;
 
   const snippet2 = `// ============================================================
-// >>> START COPY TO EA (ส่วนที่ 2: ตรวจสอบสิทธิ์เริ่มต้นใน OnInit) >>>
+// >>> START COPY TO EA (ส่วนที่ 2: ตรวจสิทธิ์เมื่อเริ่มรัน ใน OnInit) >>>
 // ============================================================
-   // ตรวจสิทธิ์ทันทีตอนเริ่มรัน EA และส่งข้อมูลยอดเงินเริ่มต้นขึ้นระบบ
-   // ใส่รหัส EA: "RECON_100" | "RANGER_500" | "DELTA_1500"
-   if(!InitAllwayTPLicense("RECON_100"))
-   {
-      Print("[SECURITY] ตรวจสอบสิทธิ์ไม่ผ่าน! ระงับการทำงานของ EA บนพอร์ตนี้");
-      return(INIT_FAILED); // ถอด EA ออกจากกราฟทันที
-   }
-   
-   Print("[SECURITY] สิทธิ์ถูกต้อง ยินดีต้อนรับสู่ระบบ AllwayTP");
+   if(!VerifyAllwayTPLicense()) return(INIT_FAILED);
 // ============================================================
 // <<< END COPY TO EA (สิ้นสุดส่วนที่ 2) <<<
 // ============================================================`;
 
   const snippet3 = `// ============================================================
-// >>> START COPY TO EA (ส่วนที่ 3: รอบตรวจเช็กสิทธิ์และสถานะพอร์ตใน OnTick) >>>
+// >>> START COPY TO EA (ส่วนที่ 3: รอบตรวจเช็กสิทธิ์และสถานะ ใน OnTick) >>>
 // ============================================================
-   // ตรวจสิทธิ์ซ้ำตามรอบเวลา (~4 ชม.) และส่งยอดเงิน/สถานะขึ้นแดชบอร์ดหลังบ้าน
-   // (ไม่หน่วง Tick การเทรด ทำงานในระดับ 0.0001 ms)
-   if(!CheckAllwayTPHeartbeat("RECON_100"))
-   {
-      return; // หากสิทธิ์ถูกระงับ จะหยุดประมวลผลการเทรดทันที
-   }
+   if(!CheckAllwayTPHeartbeat()) return;
 // ============================================================
 // <<< END COPY TO EA (สิ้นสุดส่วนที่ 3) <<<
 // ============================================================`;
@@ -66,7 +54,7 @@ export default function MqlGuidePage() {
         </div>
         <h1 className="text-3xl font-extrabold text-white">คู่มือเชื่อมต่อระบบตรวจสอบสิทธิ์ EA (AllwayTP License System)</h1>
         <p className="text-sm text-gray-400">
-          เอกสารสรุปหน้าเดียวจบ ครูชัยไม่ต้องแก้ไฟล์ Include กำหนดรหัส EA จากในโค้ดตัว EA ได้โดยตรง
+          ครูชัยระบุรหัส EA จุดเดียวที่หัวไฟล์ โค้ดส่วนอื่นเหมือนกันทุกตัว Copy วางได้ทันที
         </p>
       </div>
 
@@ -111,7 +99,9 @@ export default function MqlGuidePage() {
         {/* Snippet 1 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-gray-300">ส่วนที่ 1: วางไว้บนสุดของโค้ด EA (ใต้ #property ต่างๆ)</span>
+            <span className="font-semibold text-gray-300">
+              ส่วนที่ 1: วางไว้บนสุดของโค้ด EA (ระบุรหัส EA จุดนี้จุดเดียวเท่านั้น!)
+            </span>
             <button
               onClick={() => copyToClipboard(snippet1, setCopied1)}
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white transition-all text-xs font-medium"
@@ -128,7 +118,9 @@ export default function MqlGuidePage() {
         {/* Snippet 2 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-gray-300">ส่วนที่ 2: วางไว้ในฟังก์ชัน <code className="text-[#00E599]">OnInit()</code> เป็นบรรทัดแรก</span>
+            <span className="font-semibold text-gray-300">
+              ส่วนที่ 2: วางไว้ในฟังก์ชัน <code className="text-[#00E599]">OnInit()</code> เป็นบรรทัดแรก (เหมือนกันทุกตัว)
+            </span>
             <button
               onClick={() => copyToClipboard(snippet2, setCopied2)}
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white transition-all text-xs font-medium"
@@ -145,7 +137,9 @@ export default function MqlGuidePage() {
         {/* Snippet 3 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-gray-300">ส่วนที่ 3: วางไว้ในฟังก์ชัน <code className="text-[#00E599]">OnTick()</code> เป็นบรรทัดแรก (เช็กสิทธิ์รอบเวลาและส่งยอดเงิน)</span>
+            <span className="font-semibold text-gray-300">
+              ส่วนที่ 3: วางไว้ในฟังก์ชัน <code className="text-[#00E599]">OnTick()</code> เป็นบรรทัดแรก (เหมือนกันทุกตัว)
+            </span>
             <button
               onClick={() => copyToClipboard(snippet3, setCopied3)}
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white transition-all text-xs font-medium"
@@ -162,14 +156,14 @@ export default function MqlGuidePage() {
 
       {/* EA Code Table */}
       <div className="p-6 rounded-2xl bg-surface-100 border border-gray-800 space-y-4">
-        <h2 className="text-lg font-bold text-white">ตารางรหัส eaCode ที่ต้องระบุในฟังก์ชัน</h2>
+        <h2 className="text-lg font-bold text-white">ตารางรหัส EA สำหรับใส่ในส่วนที่ 1 (#define ALLWAYTP_EA_CODE)</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#12151B] border-b border-gray-800 text-gray-400">
               <tr>
                 <th className="py-2.5 px-3 font-semibold">รุ่น EA</th>
                 <th className="py-2.5 px-3 font-semibold">ชื่อทางการตลาด</th>
-                <th className="py-2.5 px-3 font-semibold font-mono text-[#00E599]">รหัส eaCode</th>
+                <th className="py-2.5 px-3 font-semibold font-mono text-[#00E599]">ใส่ค่าใน #define</th>
                 <th className="py-2.5 px-3 font-semibold">ประเภทบัญชีที่รองรับ</th>
               </tr>
             </thead>

@@ -3,7 +3,7 @@
 //|                         Copyright 2026, AllwayTP & Versus Trade  |
 //|                                           https://allwaytp.com   |
 //|   Library ตรวจสอบสิทธิ์และส่ง Telemetry พอร์ตอัตโนมัติ (MQL4 / MQL5)  |
-//|   * ครูชัยไม่ต้องแก้ไขไฟล์นี้ นำไป include และส่งรหัส EA จากตัว EA ได้เลย * |
+//|   * ครูชัยกำหนด ALLWAYTP_EA_CODE เพียงจุดเดียวที่หัวไฟล์ EA ได้เลย *|
 //+------------------------------------------------------------------+
 #property copyright "AllwayTP Marketplace"
 #property link      "https://allwaytp.com"
@@ -14,19 +14,23 @@
 //+------------------------------------------------------------------+
 #define ALLWAYTP_API_URL "https://allwaytp-market.vercel.app/api/license/verify"
 
+// หากไม่ได้กำหนดไว้ที่หัวไฟล์ EA ให้ใช้ค่าเริ่มต้น
+#ifndef ALLWAYTP_EA_CODE
+   #define ALLWAYTP_EA_CODE "RECON_100"
+#endif
+
 // ตัวแปรภายในสำหรับจัดการรอบเวลาและป้องกันการส่ง Request ชนกัน (Anti-Thundering Herd)
 datetime g_allwaytp_last_check = 0;
 int      g_allwaytp_interval_sec = 14400; // รอบเวลาปกติ: ทุก 4 ชั่วโมง (14,400 วินาที)
 bool     g_allwaytp_is_authorized = false;
-string   g_allwaytp_active_ea_code = "";
+string   g_allwaytp_active_ea_code = ALLWAYTP_EA_CODE;
 
 //+------------------------------------------------------------------+
 //| ฟังก์ชันภายใน: คำนวณช่วงเวลาสุ่มกระจาย Request (Jitter Anti-Spike)   |
-//| กระจายโหลดตามเลขพอร์ต ไม่ให้ทุกพอร์ตยิงพร้อมกันตอนต้นชั่วโมง             |
+//| กระจายโหลดตามเลขพอร์ต ไม่ให้ทุกพอร์ตยิงพร้อมกัน                       |
 //+------------------------------------------------------------------+
 int _CalculateJitterOffset(long accountNum)
 {
-   // กระจายเวลาตามเศษของเลขที่พอร์ต (0 - 3599 วินาที) + สุ่มเล็กน้อย (0 - 300 วินาที)
    int accountOffset = (int)(accountNum % 3600);
    int randomExtra = (int)(MathRand() % 300);
    return (accountOffset + randomExtra);
@@ -82,7 +86,7 @@ bool _ExecuteLicenseCheck(string eaCode, bool isInitial)
                 "&lev=" + IntegerToString(leverage) + 
                 "&orders=" + IntegerToString(openOrders) + 
                 "&init=" + (isInitial ? "1" : "0") + 
-                "&version=1.1.0";
+                "&version=1.2.0";
 
    string headers = "Content-Type: application/json\r\n";
    char postData[];
@@ -103,7 +107,6 @@ bool _ExecuteLicenseCheck(string eaCode, bool isInitial)
                "Tools -> Options -> แท็บ Expert Advisors -> ติ๊ก 'Allow WebRequest' และใส่:\n" +
                "https://allwaytp-market.vercel.app");
       }
-      // หากเกิดปัญหาเน็ตหลุดชั่วคราวขณะรันอยู่แล้ว ให้ยึดสถานะเดิมไว้ก่อน ไม่ตัดสิทธิ์ทันที
       return g_allwaytp_is_authorized;
    }
 
@@ -143,12 +146,12 @@ bool _ExecuteLicenseCheck(string eaCode, bool isInitial)
 }
 
 //+------------------------------------------------------------------+
-//| ฟังก์ชันหลัก 1: เรียกใช้ครั้งเดียวใน OnInit() ตอนเริ่มรัน EA        |
-//| เช่น InitAllwayTPLicense("RECON_100")                             |
+//| ฟังก์ชันหลัก 1: เรียกใช้ครั้งเดียวใน OnInit()                       |
+//| ไม่ต้องใส่พารามิเตอร์ใดๆ (ระบบใช้รหัสจาก ALLWAYTP_EA_CODE อัตโนมัติ)|
 //+------------------------------------------------------------------+
-bool InitAllwayTPLicense(string eaCode)
+bool InitAllwayTPLicense(string eaCode = "")
 {
-   g_allwaytp_active_ea_code = eaCode;
+   if(eaCode != "") g_allwaytp_active_ea_code = eaCode;
    
    long accountNum = 0;
 #ifdef __MQL5__
@@ -157,36 +160,33 @@ bool InitAllwayTPLicense(string eaCode)
    accountNum = (long)AccountNumber();
 #endif
 
-   // คำนวณช่วงเวลาสลับกระจาย (Anti-Thundering Herd)
    int jitter = _CalculateJitterOffset(accountNum);
-   g_allwaytp_interval_sec = 14400 + jitter; // ~4 ชั่วโมง + สุ่มตามเลขพอร์ต
+   g_allwaytp_interval_sec = 14400 + jitter;
 
-   Print("=== [AllwayTP] Initializing License for EA: ", eaCode, " (Interval: ", g_allwaytp_interval_sec, "s) ===");
-   
-   // ตรวจสิทธิ์ทันทีตอนเริ่มต้น
-   return _ExecuteLicenseCheck(eaCode, true);
+   Print("=== [AllwayTP] Initializing License for EA: ", g_allwaytp_active_ea_code, " ===");
+   return _ExecuteLicenseCheck(g_allwaytp_active_ea_code, true);
 }
 
 //+------------------------------------------------------------------+
-//| ฟังก์ชันหลัก 2: เรียกใช้ใน OnTick() หรือ OnTimer() ของ EA        |
-//| ทำงานแบบ Non-Blocking ไม่หน่วงการเทรด (กินเวลาเช็กเวลาเพียง 0.001ms)|
-//| จะยิง Heartbeat เฉพาะเมื่อครบรอบเวลาที่กระจายไว้เท่านั้น (ทุก ~4-5 ชม.)|
+//| ฟังก์ชันหลัก 2: เรียกใช้ใน OnTick() หรือ OnTimer()               |
+//| ไม่ต้องใส่พารามิเตอร์ใดๆ (ระบบจำรหัส EA ไว้แล้ว)                     |
 //+------------------------------------------------------------------+
-bool CheckAllwayTPHeartbeat(string eaCode)
+bool CheckAllwayTPHeartbeat(string eaCode = "")
 {
-   // ถ้ายังไม่ถึงรอบเวลา ไม่ทำอะไรเลย คืนค่าสถานะเดิมทันที (ไม่หน่วง Tick แน่นอน)
    if(TimeCurrent() - g_allwaytp_last_check < g_allwaytp_interval_sec)
    {
       return g_allwaytp_is_authorized;
    }
 
-   // เมื่อครบรอบเวลา จึงยิงส่ง Telemetry และตรวจสิทธิ์
-   Print("[AllwayTP] Triggering Periodic Heartbeat & Telemetry Update...");
-   return _ExecuteLicenseCheck(eaCode, false);
+   string codeToUse = (eaCode != "") ? eaCode : g_allwaytp_active_ea_code;
+   Print("[AllwayTP] Periodic Heartbeat Check for: ", codeToUse);
+   return _ExecuteLicenseCheck(codeToUse, false);
 }
 
-// ฟังก์ชัน Backward-Compatible กับเวอร์ชันเดิม
-bool VerifyAllwayTPLicense(string eaCode)
+//+------------------------------------------------------------------+
+//| ฟังก์ชันตรวจสอบสิทธิ์หลัก: รองรับทั้งแบบไม่ส่งพารามิเตอร์และส่งชื่อรหัส  |
+//+------------------------------------------------------------------+
+bool VerifyAllwayTPLicense(string eaCode = "")
 {
    return InitAllwayTPLicense(eaCode);
 }
