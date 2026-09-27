@@ -37,4 +37,9 @@
     - สร้างไลบรารี MQL Include Header (`public/mql/AllwayTP_License.mqh`) และคู่มือการติดตั้ง (`/mql-guide`)
     - สคริปต์ฐานข้อมูล Supabase (`supabase/schema.sql`) พร้อมตาราง eas, licenses, license_logs และ seed data
     - รัน `npm run build` ผ่านสมบูรณ์ 100% พร้อม Deploy ขึ้น Vercel
+  - **สถานะการขึ้นระบบ (Production Deployment):**
+    - เชื่อมโยง GitHub Repo `uniconsounds-cloud/allwaytp-market` เข้ากับ Vercel สำเร็จ
+    - ตั้งค่า Environment Variables (Supabase, Resend) และ Deploy ขึ้น Production เรียบร้อย
+    - คุณโจ้ตรวจสอบและยืนยันการมองเห็นหน้าเว็บไซต์ AllwayTP EA Market ออนไลน์เรียบร้อยแล้ว
+    - สถานะระบบพร้อมสำหรับการเพิ่มฟีเจอร์ ปรับแต่ง UI และทดสอบการยิงสิทธิ์จาก EA ของครูชัยต่อไป
 
