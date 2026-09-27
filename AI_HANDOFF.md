@@ -41,5 +41,7 @@
     - เชื่อมโยง GitHub Repo `uniconsounds-cloud/allwaytp-market` เข้ากับ Vercel สำเร็จ
     - ตั้งค่า Environment Variables (Supabase, Resend) และ Deploy ขึ้น Production เรียบร้อย
     - คุณโจ้ตรวจสอบและยืนยันการมองเห็นหน้าเว็บไซต์ AllwayTP EA Market ออนไลน์เรียบร้อยแล้ว
-    - สถานะระบบพร้อมสำหรับการเพิ่มฟีเจอร์ ปรับแต่ง UI และทดสอบการยิงสิทธิ์จาก EA ของครูชัยต่อไป
+    - สร้างเอกสารคู่มือหน้าเดียวจบสำหรับครูชัย: `คู่มือการเชื่อมต่อ_EA_สำหรับครูชัย.md` พร้อม Comment กั้นหัวท้ายชัดเจน
+    - จัดวางไฟล์ Include ไว้ที่ `mql/AllwayTP_License.mqh` และ `public/mql/AllwayTP_License.mqh` รองรับทั้ง MT4 และ MT5 แบบ Hybrid
+    - อัปเดตหน้าเว็บ `/mql-guide` เพิ่มปุ่มคลิกเดียว Copy โค้ดแต่ละส่วนอำนวยความสะดวก
 
