@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Copy, Check, FileCode2, Download, ExternalLink } from "lucide-react";
+import { ArrowLeft, Copy, Check, FileCode2, Download } from "lucide-react";
 
 export default function MqlGuidePage() {
   const [copied1, setCopied1] = useState(false);
   const [copied2, setCopied2] = useState(false);
+  const [copied3, setCopied3] = useState(false);
 
   const snippet1 = `// ============================================================
 // >>> START COPY TO EA (ส่วนที่ 1: Include Header) >>>
@@ -17,19 +18,32 @@ export default function MqlGuidePage() {
 // ============================================================`;
 
   const snippet2 = `// ============================================================
-// >>> START COPY TO EA (ส่วนที่ 2: ตรวจสอบสิทธิ์กับระบบคลาวด์) >>>
+// >>> START COPY TO EA (ส่วนที่ 2: ตรวจสอบสิทธิ์เริ่มต้นใน OnInit) >>>
 // ============================================================
-   // ตรวจสอบสิทธิ์กับ AllwayTP Cloud Server
-   // รหัส EA: "RECON_100" | "RANGER_500" | "DELTA_1500"
-   if(!VerifyAllwayTPLicense("RECON_100"))
+   // ตรวจสิทธิ์ทันทีตอนเริ่มรัน EA และส่งข้อมูลยอดเงินเริ่มต้นขึ้นระบบ
+   // ใส่รหัส EA: "RECON_100" | "RANGER_500" | "DELTA_1500"
+   if(!InitAllwayTPLicense("RECON_100"))
    {
       Print("[SECURITY] ตรวจสอบสิทธิ์ไม่ผ่าน! ระงับการทำงานของ EA บนพอร์ตนี้");
-      return(INIT_FAILED); // หยุดและสั่งถอด EA ออกจากกราฟทันที
+      return(INIT_FAILED); // ถอด EA ออกจากกราฟทันที
    }
    
-   Print("[SECURITY] สิทธิ์ถูกต้อง (ACTIVE) ยินดีต้อนรับสู่ AllwayTP System");
+   Print("[SECURITY] สิทธิ์ถูกต้อง ยินดีต้อนรับสู่ระบบ AllwayTP");
 // ============================================================
 // <<< END COPY TO EA (สิ้นสุดส่วนที่ 2) <<<
+// ============================================================`;
+
+  const snippet3 = `// ============================================================
+// >>> START COPY TO EA (ส่วนที่ 3: รอบตรวจเช็กสิทธิ์และสถานะพอร์ตใน OnTick) >>>
+// ============================================================
+   // ตรวจสิทธิ์ซ้ำตามรอบเวลา (~4 ชม.) และส่งยอดเงิน/สถานะขึ้นแดชบอร์ดหลังบ้าน
+   // (ไม่หน่วง Tick การเทรด ทำงานในระดับ 0.0001 ms)
+   if(!CheckAllwayTPHeartbeat("RECON_100"))
+   {
+      return; // หากสิทธิ์ถูกระงับ จะหยุดประมวลผลการเทรดทันที
+   }
+// ============================================================
+// <<< END COPY TO EA (สิ้นสุดส่วนที่ 3) <<<
 // ============================================================`;
 
   const copyToClipboard = (text: string, setCopied: (v: boolean) => void) => {
@@ -52,7 +66,7 @@ export default function MqlGuidePage() {
         </div>
         <h1 className="text-3xl font-extrabold text-white">คู่มือเชื่อมต่อระบบตรวจสอบสิทธิ์ EA (AllwayTP License System)</h1>
         <p className="text-sm text-gray-400">
-          เอกสารสรุปหน้าเดียวจบ พร้อมโค้ดที่ครอบ Comment กั้นหัวท้ายสำหรับ Copy ไปวางในไฟล์ EA (.mq4 / .mq5)
+          เอกสารสรุปหน้าเดียวจบ ครูชัยไม่ต้องแก้ไฟล์ Include กำหนดรหัส EA จากในโค้ดตัว EA ได้โดยตรง
         </p>
       </div>
 
@@ -61,7 +75,7 @@ export default function MqlGuidePage() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[#00E599] text-black font-bold text-xs flex items-center justify-center">1</span>
-            <span>นำไฟล์ Include ไปวางในเครื่อง</span>
+            <span>นำไฟล์ Include ไปวางในเครื่อง (ทำครั้งเดียว)</span>
           </h2>
           <a
             href="/mql/AllwayTP_License.mqh"
@@ -125,6 +139,23 @@ export default function MqlGuidePage() {
           </div>
           <div className="rounded-xl bg-[#0B0E14] border border-gray-800 p-4 font-mono text-xs text-emerald-300 overflow-x-auto">
             <pre>{snippet2}</pre>
+          </div>
+        </div>
+
+        {/* Snippet 3 */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-gray-300">ส่วนที่ 3: วางไว้ในฟังก์ชัน <code className="text-[#00E599]">OnTick()</code> เป็นบรรทัดแรก (เช็กสิทธิ์รอบเวลาและส่งยอดเงิน)</span>
+            <button
+              onClick={() => copyToClipboard(snippet3, setCopied3)}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white transition-all text-xs font-medium"
+            >
+              {copied3 ? <Check className="w-3.5 h-3.5 text-[#00E599]" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copied3 ? "คัดลอกแล้ว!" : "Copy ส่วนที่ 3"}</span>
+            </button>
+          </div>
+          <div className="rounded-xl bg-[#0B0E14] border border-gray-800 p-4 font-mono text-xs text-emerald-300 overflow-x-auto">
+            <pre>{snippet3}</pre>
           </div>
         </div>
       </div>

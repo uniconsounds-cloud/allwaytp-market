@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS public.eas (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Table: licenses (Account-level EA permissions)
+-- 2. Table: licenses (Account-level EA permissions & Telemetry)
 CREATE TABLE IF NOT EXISTS public.licenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ea_code TEXT NOT NULL REFERENCES public.eas(code) ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -34,10 +34,33 @@ CREATE TABLE IF NOT EXISTS public.licenses (
     expires_at TIMESTAMPTZ, -- NULL = lifetime or active until revoked
     approved_by TEXT,
     notes TEXT,
+    
+    -- Telemetry & Portfolio Tracking fields (Updated periodically via Heartbeat)
+    balance NUMERIC DEFAULT 0,
+    equity NUMERIC DEFAULT 0,
+    floating_pnl NUMERIC DEFAULT 0,
+    free_margin NUMERIC DEFAULT 0,
+    account_currency TEXT DEFAULT 'USD',
+    leverage INT DEFAULT 100,
+    open_orders_count INT DEFAULT 0,
+    last_seen_at TIMESTAMPTZ DEFAULT NOW(),
+    ping_count INT DEFAULT 0,
+    
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT unique_license_account_ea UNIQUE (ea_code, account_number, broker_server)
 );
+
+-- In case licenses table already exists, add telemetry columns safely:
+ALTER TABLE public.licenses ADD COLUMN IF NOT EXISTS balance NUMERIC DEFAULT 0;
+ALTER TABLE public.licenses ADD COLUMN IF NOT EXISTS equity NUMERIC DEFAULT 0;
+ALTER TABLE public.licenses ADD COLUMN IF NOT EXISTS floating_pnl NUMERIC DEFAULT 0;
+ALTER TABLE public.licenses ADD COLUMN IF NOT EXISTS free_margin NUMERIC DEFAULT 0;
+ALTER TABLE public.licenses ADD COLUMN IF NOT EXISTS account_currency TEXT DEFAULT 'USD';
+ALTER TABLE public.licenses ADD COLUMN IF NOT EXISTS leverage INT DEFAULT 100;
+ALTER TABLE public.licenses ADD COLUMN IF NOT EXISTS open_orders_count INT DEFAULT 0;
+ALTER TABLE public.licenses ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE public.licenses ADD COLUMN IF NOT EXISTS ping_count INT DEFAULT 0;
 
 -- 3. Table: license_logs (Audit trail for verification checks from MQL)
 CREATE TABLE IF NOT EXISTS public.license_logs (
@@ -52,9 +75,12 @@ CREATE TABLE IF NOT EXISTS public.license_logs (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Create indexes for ultra-fast verification lookups
+-- Create indexes for ultra-fast verification lookups & telemetry monitoring
 CREATE INDEX IF NOT EXISTS idx_licenses_lookup 
 ON public.licenses (account_number, ea_code, broker_server, status);
+
+CREATE INDEX IF NOT EXISTS idx_licenses_last_seen 
+ON public.licenses (last_seen_at);
 
 CREATE INDEX IF NOT EXISTS idx_license_logs_account 
 ON public.license_logs (account_number, created_at DESC);
@@ -68,7 +94,6 @@ ALTER TABLE public.license_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read active EAs" 
 ON public.eas FOR SELECT USING (is_active = TRUE);
 
--- Service role has full access to all tables (bypasses RLS)
 -- Anon users can submit license registration requests
 CREATE POLICY "Anon insert license requests"
 ON public.licenses FOR INSERT WITH CHECK (status = 'PENDING');
