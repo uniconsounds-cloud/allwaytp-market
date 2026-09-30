@@ -19,7 +19,8 @@ import {
   DollarSign,
   Info,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 
@@ -119,7 +120,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           id,
           status: newStatus,
-          approved_by: "Admin (คุณโจ้/ครูชัย)",
+          approved_by: "Admin Team",
         }),
       });
       if (res.ok) {
@@ -189,33 +190,40 @@ export default function AdminDashboard() {
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffDays >= 3) {
-      return { text: `ขาดการเชื่อมต่อ ${diffDays} วัน`, color: "text-red-400 font-semibold", isAlert: true };
+      return { text: `ขาดการเชื่อมต่อ ${diffDays} วัน`, color: "text-rose-400 font-semibold", isAlert: true };
     }
     if (diffDays >= 1) {
       return { text: `ออฟไลน์ ${diffDays} วัน`, color: "text-amber-400", isAlert: false };
     }
     if (diffHours >= 1) {
-      return { text: `${diffHours} ชม. ที่แล้ว`, color: "text-emerald-400", isAlert: false };
+      return { text: `${diffHours} ชม. ที่แล้ว`, color: "text-[#D4AF37]", isAlert: false };
     }
     if (diffMins > 0) {
-      return { text: `${diffMins} นาทีที่แล้ว`, color: "text-emerald-400", isAlert: false };
+      return { text: `${diffMins} นาทีที่แล้ว`, color: "text-[#D4AF37]", isAlert: false };
     }
-    return { text: "เพิ่งเชื่อมต่อเมื่อครู่", color: "text-[#00E599]", isAlert: false };
+    return { text: "เพิ่งเชื่อมต่อเมื่อครู่", color: "text-emerald-400 font-semibold", isAlert: false };
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-[#00E599] border border-emerald-500/20">
-              Admin Backoffice
-            </span>
-            <span className="text-xs text-gray-500 font-mono">AllwayTP x Versus Trade</span>
+        <div className="flex items-center gap-3.5">
+          <img 
+            src="/images/zenx-logo.jpg" 
+            alt="Zen X Academy" 
+            className="w-12 h-12 rounded-full border border-gold-500/60 object-cover shadow-lg hidden sm:block" 
+          />
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-gold-500/10 text-[#D4AF37] border border-gold-500/30">
+                Admin Backoffice
+              </span>
+              <span className="text-xs text-gray-500 font-mono">Zen X Academy x Versus Trade</span>
+            </div>
+            <h1 className="text-3xl font-black text-white mt-1">ระบบจัดการสิทธิ์และติดตามพอร์ต EA</h1>
+            <p className="text-xs text-gray-400 mt-1">ควบคุมและอนุมัติสิทธิ์การใช้งาน พร้อมระบบติดตามสถานะพอร์ตแบบ Real-time</p>
           </div>
-          <h1 className="text-3xl font-extrabold text-white mt-1">ระบบจัดการสิทธิ์และติดตามพอร์ต EA</h1>
-          <p className="text-xs text-gray-400 mt-1">ควบคุมสิทธิ์รายพอร์ต และติดตามการทำงานแบบ Real-time โดยไม่หน่วงการเทรด</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -223,26 +231,26 @@ export default function AdminDashboard() {
             href="/mql-guide"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-100 hover:bg-surface-200 border border-gray-700 text-xs font-semibold text-gray-300 hover:text-white transition-all"
           >
-            <FileCode2 className="w-4 h-4 text-[#00E599]" />
-            <span>คู่มือโค้ดครูชัย</span>
+            <FileCode2 className="w-4 h-4 text-[#D4AF37]" />
+            <span>คู่มือติดตั้งใน EA (.mqh)</span>
           </Link>
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#00E599] hover:bg-[#00C985] text-black text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3C64F] to-[#B8860B] hover:brightness-110 text-black text-xs font-bold shadow-lg shadow-amber-950/40 transition-all"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-black" />
             <span>เพิ่มสิทธิ์พอร์ตใหม่</span>
           </button>
         </div>
       </div>
 
       {/* Explanatory Guide Box for Admins */}
-      <div className="rounded-2xl bg-surface-100/90 border border-emerald-500/20 overflow-hidden shadow-lg">
+      <div className="rounded-2xl bg-surface-100 border border-gold-500/25 overflow-hidden shadow-xl">
         <div 
           onClick={() => setShowSystemInfo(!showSystemInfo)}
-          className="p-4 bg-emerald-950/20 flex items-center justify-between cursor-pointer select-none"
+          className="p-4 bg-amber-950/20 flex items-center justify-between cursor-pointer select-none"
         >
-          <div className="flex items-center gap-2.5 text-xs font-bold text-[#00E599]">
+          <div className="flex items-center gap-2.5 text-xs font-bold text-[#D4AF37]">
             <Info className="w-4 h-4" />
             <span>คำอธิบายการทำงานของระบบตรวจเช็กสิทธิ์และรอบเวลา (สำหรับแอดมิน)</span>
           </div>
@@ -252,25 +260,25 @@ export default function AdminDashboard() {
         </div>
 
         {showSystemInfo && (
-          <div className="p-5 text-xs text-gray-300 space-y-3 border-t border-gray-800/60 leading-relaxed bg-[#0E1117]">
+          <div className="p-5 text-xs text-gray-300 space-y-3 border-t border-gray-800/80 leading-relaxed bg-[#0C0E14]">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-3 rounded-xl bg-[#141820] border border-gray-800">
-                <span className="font-bold text-white block mb-1 text-[13px]">⏱️ 1. รอบเวลาตรวจสอบ (Heartbeat)</span>
-                <p className="text-gray-400">
+              <div className="p-3.5 rounded-xl bg-[#141820] border border-gray-800">
+                <span className="font-bold text-white block mb-1 text-[13px] text-[#D4AF37]">⏱️ 1. รอบเวลาตรวจสอบ (Heartbeat)</span>
+                <p className="text-gray-400 text-[11px] leading-relaxed">
                   EA ตรวจสิทธิ์ครั้งแรกทันทีที่เปิดกราฟ และจะยิงตรวจซ้ำ<b>ทุก ~4-5 ชั่วโมง</b> ทำงานแบบ Non-Blocking ไม่หน่วง Tick และไม่กระทบความเร็วการส่งคำสั่งเทรด
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#141820] border border-gray-800">
-                <span className="font-bold text-white block mb-1 text-[13px]">🛡️ 2. ระบบสุ่มกระจายโหลด (Anti-Spike)</span>
-                <p className="text-gray-400">
-                  ระบบ<b>ไม่เช็กพร้อมกันเวลาเดียวกัน</b> แต่ใช้เศษเลขพอร์ต (Account Offset) สลับเวลาส่ง Request ตลอด 24 ชม. แม้มี 10,000 พอร์ต เซิร์ฟเวอร์ก็ไม่ล่มและประหยัดค่าใช้จ่าย 100%
+              <div className="p-3.5 rounded-xl bg-[#141820] border border-gray-800">
+                <span className="font-bold text-white block mb-1 text-[13px] text-[#D4AF37]">🛡️ 2. ระบบสุ่มกระจายโหลด (Anti-Spike)</span>
+                <p className="text-gray-400 text-[11px] leading-relaxed">
+                  ระบบ<b>ไม่เช็กพร้อมกันเวลาเดียวกัน</b> แต่ใช้เศษเลขพอร์ต (Account Offset) สลับเวลาส่ง Request ตลอด 24 ชม. ป้องกัน Traffic ชนกันและประหยัดค่าใช้จ่าย 100%
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#141820] border border-gray-800">
-                <span className="font-bold text-white block mb-1 text-[13px]">⚠️ 3. การแจ้งเตือนพอร์ตไม่ใช้งาน</span>
-                <p className="text-gray-400">
+              <div className="p-3.5 rounded-xl bg-[#141820] border border-gray-800">
+                <span className="font-bold text-white block mb-1 text-[13px] text-rose-400">⚠️ 3. การแจ้งเตือนพอร์ตไม่ใช้งาน</span>
+                <p className="text-gray-400 text-[11px] leading-relaxed">
                   หากพอร์ตไหน<b>ขาดการเชื่อมต่อเกิน 3 วัน</b> ระบบจะขึ้นเตือนสีแดง เพื่อให้แอดมินทราบและตัดสินใจกด "ระงับสิทธิ์" ด้วยตนเอง (ระบบจะไม่ตัดสิทธิ์เองอัตโนมัติ)
                 </p>
               </div>
@@ -286,23 +294,23 @@ export default function AdminDashboard() {
             <span>คำขอทั้งหมด</span>
             <Layers className="w-4 h-4 text-gray-500" />
           </div>
-          <div className="text-2xl font-black text-white">{stats.total}</div>
+          <div className="text-2xl font-black text-white font-mono">{stats.total}</div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-surface-100 border border-emerald-500/20 bg-emerald-950/10">
-          <div className="flex items-center justify-between text-emerald-400 text-xs mb-2">
+        <div className="p-5 rounded-2xl bg-surface-100 border border-gold-500/30 bg-amber-950/10">
+          <div className="flex items-center justify-between text-[#D4AF37] text-xs mb-2">
             <span>เปิดสิทธิ์ (Active)</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
           </div>
-          <div className="text-2xl font-black text-[#00E599]">{stats.active}</div>
+          <div className="text-2xl font-black text-[#D4AF37] font-mono">{stats.active}</div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-surface-100 border border-amber-500/20 bg-amber-950/10">
-          <div className="flex items-center justify-between text-amber-400 text-xs mb-2">
+        <div className="p-5 rounded-2xl bg-surface-100 border border-yellow-500/30 bg-yellow-950/10">
+          <div className="flex items-center justify-between text-yellow-400 text-xs mb-2">
             <span>รอการอนุมัติ (Pending)</span>
-            <Clock className="w-4 h-4 text-amber-400" />
+            <Clock className="w-4 h-4 text-yellow-400" />
           </div>
-          <div className="text-2xl font-black text-amber-400">{stats.pending}</div>
+          <div className="text-2xl font-black text-yellow-400 font-mono">{stats.pending}</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-surface-100 border border-red-500/20 bg-red-950/10">
@@ -310,7 +318,7 @@ export default function AdminDashboard() {
             <span>ระงับสิทธิ์ (Revoked)</span>
             <XCircle className="w-4 h-4 text-red-400" />
           </div>
-          <div className="text-2xl font-black text-red-400">{stats.revoked}</div>
+          <div className="text-2xl font-black text-red-400 font-mono">{stats.revoked}</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-surface-100 border border-rose-500/30 bg-rose-950/20 col-span-2 md:col-span-1">
@@ -318,7 +326,7 @@ export default function AdminDashboard() {
             <span>แจ้งเตือนไม่ได้รัน (&gt;3 วัน)</span>
             <AlertTriangle className="w-4 h-4 text-rose-400" />
           </div>
-          <div className="text-2xl font-black text-rose-400">{stats.inactiveAlerts}</div>
+          <div className="text-2xl font-black text-rose-400 font-mono">{stats.inactiveAlerts}</div>
         </div>
       </div>
 
@@ -332,7 +340,7 @@ export default function AdminDashboard() {
               placeholder="ค้นหาเลขพอร์ต, ชื่อลูกค้า, เบอร์โทร..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#12151B] border border-gray-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#00E599]"
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#D4AF37]"
             />
           </div>
           <button
@@ -348,7 +356,7 @@ export default function AdminDashboard() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-[#12151B] border border-gray-700 text-xs text-white focus:outline-none focus:border-[#00E599]"
+            className="px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
           >
             <option value="ALL">สถานะทั้งหมด</option>
             <option value="PENDING">รออนุมัติ (Pending)</option>
@@ -360,7 +368,7 @@ export default function AdminDashboard() {
           <select
             value={filterEa}
             onChange={(e) => setFilterEa(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-[#12151B] border border-gray-700 text-xs text-white focus:outline-none focus:border-[#00E599]"
+            className="px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
           >
             <option value="ALL">EA ทุกรุ่น</option>
             <option value="RECON_100">Recon AiAuto100</option>
@@ -370,7 +378,7 @@ export default function AdminDashboard() {
 
           <button
             onClick={() => fetchLicenses()}
-            className="p-2 rounded-xl bg-[#12151B] border border-gray-700 hover:bg-surface-200 text-gray-400 hover:text-white transition-all"
+            className="p-2 rounded-xl bg-[#0C0E14] border border-gray-700 hover:bg-surface-200 text-gray-400 hover:text-white transition-all"
             title="รีเฟรชข้อมูล"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -379,10 +387,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* Licenses Table with Telemetry */}
-      <div className="rounded-2xl bg-surface-100 border border-gray-800 overflow-hidden shadow-xl">
+      <div className="rounded-2xl bg-surface-100 border border-gray-800 overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#12151B] border-b border-gray-800 text-gray-400 uppercase tracking-wider">
+            <thead className="bg-[#0C0E14] border-b border-gray-800 text-gray-400 uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4 font-semibold">เลขพอร์ตเทรด</th>
                 <th className="py-3.5 px-4 font-semibold">EA / เจ้าของพอร์ต</th>
@@ -469,12 +477,12 @@ export default function AdminDashboard() {
                       {/* License Status */}
                       <td className="py-4 px-4">
                         {lic.status === "ACTIVE" && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-[#00E599] border border-emerald-500/20">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-gold-500/10 text-[#D4AF37] border border-gold-500/30">
                             <Check className="w-3 h-3" /> เปิดใช้งาน
                           </span>
                         )}
                         {lic.status === "PENDING" && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
                             <Clock className="w-3 h-3" /> รออนุมัติ
                           </span>
                         )}
@@ -497,7 +505,7 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => updateStatus(lic.id, "ACTIVE")}
                               disabled={actionLoading === lic.id}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-[#00E599] border border-emerald-500/30 text-[11px] font-bold transition-all disabled:opacity-50"
+                              className="px-2.5 py-1 rounded-lg bg-gold-500/10 hover:bg-gold-500/20 text-[#D4AF37] border border-gold-500/30 text-[11px] font-bold transition-all disabled:opacity-50"
                               title="อนุมัติสิทธิ์ให้ทำงาน"
                             >
                               อนุมัติ
@@ -534,8 +542,8 @@ export default function AdminDashboard() {
 
       {/* Add License Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-surface-100 border border-gray-700 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-surface-100 border border-gold-500/30 p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-800">
               <h2 className="text-lg font-bold text-white">เพิ่มและเปิดสิทธิ์พอร์ตใหม่</h2>
               <button 
@@ -552,7 +560,7 @@ export default function AdminDashboard() {
                 <select
                   value={newEaCode}
                   onChange={(e) => setNewEaCode(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#12151B] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#00E599]"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
                 >
                   <option value="RECON_100">Recon AiAuto100</option>
                   <option value="RANGER_500">Ranger AiAuto500</option>
@@ -568,7 +576,7 @@ export default function AdminDashboard() {
                   placeholder="เช่น 1004567"
                   value={newAccountNumber}
                   onChange={(e) => setNewAccountNumber(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#12151B] border border-gray-700 text-white font-mono text-xs focus:outline-none focus:border-[#00E599]"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white font-mono text-xs focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
 
@@ -578,7 +586,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={newBrokerServer}
                   onChange={(e) => setNewBrokerServer(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#12151B] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#00E599]"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
 
@@ -589,7 +597,7 @@ export default function AdminDashboard() {
                   placeholder="ชื่อลูกค้าหรือเจ้าของพอร์ต"
                   value={newClientName}
                   onChange={(e) => setNewClientName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#12151B] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#00E599]"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
 
@@ -600,7 +608,7 @@ export default function AdminDashboard() {
                   placeholder="ช่องทางติดต่อ"
                   value={newClientPhone}
                   onChange={(e) => setNewClientPhone(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#12151B] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#00E599]"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
 
@@ -609,7 +617,7 @@ export default function AdminDashboard() {
                 <select
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value as "ACTIVE" | "PENDING")}
-                  className="w-full px-3 py-2 rounded-xl bg-[#12151B] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#00E599]"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
                 >
                   <option value="ACTIVE">เปิดสิทธิ์ทันที (ACTIVE)</option>
                   <option value="PENDING">รอตรวจสอบ (PENDING)</option>
@@ -620,13 +628,13 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-2 rounded-xl bg-surface-200 hover:bg-surface-300 text-white font-medium text-xs transition-all"
+                  className="flex-1 py-2.5 rounded-xl bg-surface-200 hover:bg-surface-300 text-white font-medium text-xs transition-all"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-xl bg-[#00E599] hover:bg-[#00C985] text-black font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3C64F] to-[#B8860B] hover:brightness-110 text-black font-extrabold text-xs shadow-lg shadow-amber-950/40 transition-all"
                 >
                   บันทึกสิทธิ์
                 </button>

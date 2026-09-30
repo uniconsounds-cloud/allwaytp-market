@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #0B0E14;
+  --background: #090A0E;
   --foreground: #F3F4F6;
 }
 
@@ -18,12 +18,28 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0E14;
+  background: #090A0E;
 }
 ::-webkit-scrollbar-thumb {
-  background: #262C36;
+  background: #252834;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #323A47;
+  background: #3A3E4E;
+}
+
+/* Gold Gradient Text Utility */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #FFF0B3 0%, #D4AF37 50%, #AA771C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.border-gold-glow {
+  border-color: rgba(212, 175, 55, 0.35);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.12);
+}
+
+.gold-glow {
+  box-shadow: 0 0 35px rgba(212, 175, 55, 0.18);
 }

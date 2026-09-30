@@ -12,15 +12,29 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
         primary: {
-          DEFAULT: "#00E599",
-          hover: "#00C985",
-          dark: "#008556",
+          DEFAULT: "#D4AF37", // Elegant Metallic Gold
+          hover: "#E5C07B",
+          dark: "#996515",
+          light: "#FDF6E2",
+        },
+        gold: {
+          50: "#FFFDF5",
+          100: "#FEF9E7",
+          200: "#FDF0C5",
+          300: "#FCE59F",
+          400: "#F9D571",
+          500: "#D4AF37", // Base Gold
+          600: "#B8860B", // Dark Goldenrod
+          700: "#8C6508",
+          800: "#5E4305",
+          900: "#382802",
         },
         surface: {
-          50: "#181B20",
-          100: "#1E2229",
-          200: "#262C36",
-          300: "#323A47",
+          50: "#0F1117",
+          100: "#151821",
+          200: "#1C202C",
+          300: "#262B3A",
+          card: "#12141C",
         }
       },
     },

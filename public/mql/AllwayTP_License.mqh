@@ -133,7 +133,7 @@ bool _ExecuteLicenseCheck(string eaCode, bool isInitial)
    {
       g_allwaytp_is_authorized = false;
       Alert("[AllwayTP] พอร์ต ", accountNumber, " อยู่ระหว่างรออนุมัติสิทธิ์");
-      Comment("\n>>> AllwayTP License: [ PENDING ] <<<\nรอการอนุมัติสิทธิ์จากคุณโจ้/ครูชัย\n");
+      Comment("\n>>> AllwayTP License: [ PENDING ] <<<\nรอการอนุมัติสิทธิ์จากผู้ดูแลระบบ\n");
       return false;
    }
    else

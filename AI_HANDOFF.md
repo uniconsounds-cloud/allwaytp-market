@@ -52,3 +52,21 @@
       - เพิ่มระบบแจ้งเตือนพอร์ตขาดการเชื่อมต่อเกิน 3 วันบนหน้า Admin โดยไม่ตัดสิทธิ์อัตโนมัติ ให้แอดมินพิจารณากดระงับสิทธิ์เอง
       - จัดทำเอกสารสรุปสำคัญสำหรับแอดมิน: `ระบบการตรวจสิทธิ์และติดตามพอร์ต_สำหรับแอดมิน.md` และกล่องคำอธิบายระบบบนหน้าเว็บ `/admin`
 
+## 2026-09-30 — Antigravity — ปรับโฉมธีมสีทอง ดำ เทา และเพิ่มภาพสินค้า Zen X Academy
+
+- **คำสั่งผู้ใช้:**
+  1. ปรับโทนสีหน้าเว็บให้เป็น **โทนสีทอง, ดำ, เทา (Luxury Gold, Black & Charcoal Grey)**
+  2. **นำชื่อบุคคลออกทั้งหมด** (ไม่ให้มีชื่อบุคคล เช่น ครูชัย ปรากฏบนหน้าเว็บหรือระบบ) เปลี่ยนเป็นชื่อองค์กร/ทีมงาน
+  3. เพิ่มรูปสินค้าจากโฟลเดอร์ `Image/` นำภาพกล่อง 3D Box ของ EA แต่ละรุ่น และตราโลโก้ **Zen X Academy** มาใช้เป็นแบรนด์การตลาดหลัก
+- **การดำเนินงานและไฟล์ที่แก้ไข:**
+  - `tailwind.config.ts` & `src/app/globals.css`: ปรับแต่ง Palette สีทอง Metallic Gold (`#D4AF37`), Dark Goldenrod, พื้นหลัง Deep Charcoal Black (`#090A0E`) พร้อมเอฟเฟกต์ Gold Glow และ Gradient
+  - จัดเตรียม Asset รูปภาพใน `public/images/`:
+    - `zenx-logo.jpg`: โลโก้เหรียญทอง Zen X Academy
+    - `ea-recon-100.jpg`: ภาพกล่อง 3D Box Recon AiAuto100
+    - `ea-ranger-500.jpg`: ภาพกล่อง 3D Box Ranger AiAuto500
+    - `ea-delta-1500.jpg`: ภาพกล่อง 3D Box Delta AiAuto1500
+  - `src/app/layout.tsx`: ติดตั้งโลโก้ Zen X Academy บน Navbar และ Footer เชื่อมโยง AllwayTP x Zen X Academy
+  - `src/app/page.tsx`: ปรับหน้าแรกใหม่ทั้งหมด โชว์ภาพกล่อง 3D Box ทั้ง 3 รุ่นอย่างสวยงาม คมชัด จัดวางสเปกแบบ Gold Accent และ Banner ร่วมกับ Versus Trade
+  - `src/app/register-license/page.tsx`, `src/app/admin/page.tsx`, `src/app/mql-guide/page.tsx`: ปรับธีมสีทอง/ดำ/เทา และลบชื่อบุคคลออกทั้งหมด 100%
+  - รันคำสั่ง `npm run build` ผ่านสมบูรณ์ พร้อม Deploy สู่ Production
+
