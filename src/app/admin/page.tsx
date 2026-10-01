@@ -134,6 +134,34 @@ interface SystemHealthData {
   };
 }
 
+const getDateStringFromDays = (days: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + Number(days || 0));
+  return d.toISOString().split("T")[0];
+};
+
+const getDaysFromDateString = (dateStr: string) => {
+  if (!dateStr) return 30;
+  const target = new Date(dateStr);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  target.setHours(0, 0, 0, 0);
+  const diffTime = target.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(1, diffDays);
+};
+
+const formatThaiDatePreview = (days: number) => {
+  if (!days || days <= 0) return "ไม่จำกัดเวลา (ตลอดชีพ)";
+  const d = new Date();
+  d.setDate(d.getDate() + Number(days));
+  return d.toLocaleDateString("th-TH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 export default function AdminDashboard() {
   const router = useRouter();
 
@@ -203,6 +231,9 @@ export default function AdminDashboard() {
     images: [],
     duration_days: 365,
   });
+
+  const [eaDurationPreset, setEaDurationPreset] = useState<"30" | "60" | "90" | "180" | "365" | "custom">("365");
+  const [eaCustomDate, setEaCustomDate] = useState<string>("");
 
   // Technical Health Tab State (Super Admin Only)
   const [healthData, setHealthData] = useState<SystemHealthData | null>(null);
@@ -540,6 +571,15 @@ export default function AdminDashboard() {
       setEditingEA(ea);
       const defaultImgs = DEFAULT_EA_IMAGES[ea.code] || [];
       const currentImgs = Array.isArray(ea.images) && ea.images.length > 0 ? ea.images : defaultImgs;
+      const days = ea.duration_days || 365;
+
+      if (days === 30) setEaDurationPreset("30");
+      else if (days === 60) setEaDurationPreset("60");
+      else if (days === 90) setEaDurationPreset("90");
+      else if (days === 180) setEaDurationPreset("180");
+      else if (days === 365) setEaDurationPreset("365");
+      else setEaDurationPreset("custom");
+      setEaCustomDate(getDateStringFromDays(days));
 
       setEaFormData({
         code: ea.code,
@@ -553,10 +593,12 @@ export default function AdminDashboard() {
         version: ea.version,
         is_active: ea.is_active,
         images: [...currentImgs],
-        duration_days: ea.duration_days || 365,
+        duration_days: days,
       });
     } else {
       setEditingEA(null);
+      setEaDurationPreset("365");
+      setEaCustomDate(getDateStringFromDays(365));
       setEaFormData({
         code: "",
         name: "",
@@ -1834,21 +1876,117 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Duration Days */}
-              <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">
-                  ระยะเวลาอายุสิทธิ์เริ่มต้น (วัน)
-                </label>
-                <input
-                  type="number"
-                  placeholder="เช่น 365 (1 ปี) หรือ 0 สำหรับไม่จำกัดเวลา/ตลอดชีพ"
-                  value={eaFormData.duration_days}
-                  onChange={(e) => setEaFormData({ ...eaFormData, duration_days: Number(e.target.value) })}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-                />
-                <span className="text-[10px] text-gray-500 mt-0.5 block">
-                  ระบุจำนวนวันที่อนุญาตให้ใช้งานเริ่มต้นเมื่อลูกค้าขอเปิดสิทธิ์ (ค่ามาตรฐาน: 365 วัน)
-                </span>
+              {/* Duration Settings: 6 Preset Buttons + Custom Date/Days Picker */}
+              <div className="space-y-3 p-3.5 rounded-2xl bg-[#080A0F] border border-gray-800/80">
+                <div className="flex items-center justify-between">
+                  <label className="font-semibold text-gray-200 flex items-center gap-1.5 text-xs">
+                    <Clock className="w-4 h-4 text-[#D4AF37]" />
+                    <span>การตั้งเวลาสิทธิ์ EA (ระยะเวลาอายุสิทธิ์เริ่มต้น)</span>
+                  </label>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37] font-mono font-medium">
+                    {eaFormData.duration_days} วัน
+                  </span>
+                </div>
+
+                {/* 6 Preset Buttons: 1, 2, 3, 6 เดือน, 1 ปี, ตั้งเอง */}
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {[
+                    { id: "30", label: "1 เดือน", days: 30 },
+                    { id: "60", label: "2 เดือน", days: 60 },
+                    { id: "90", label: "3 เดือน", days: 90 },
+                    { id: "180", label: "6 เดือน", days: 180 },
+                    { id: "365", label: "1 ปี", days: 365 },
+                    { id: "custom", label: "ตั้งเอง", days: null },
+                  ].map((preset) => {
+                    const isSelected = eaDurationPreset === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => {
+                          setEaDurationPreset(preset.id as "30" | "60" | "90" | "180" | "365" | "custom");
+                          if (preset.days !== null) {
+                            setEaFormData((prev) => ({ ...prev, duration_days: preset.days! }));
+                            setEaCustomDate(getDateStringFromDays(preset.days!));
+                          }
+                        }}
+                        className={`px-2 py-2 rounded-xl text-xs font-semibold border transition-all text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                          isSelected
+                            ? "bg-gradient-to-b from-[#D4AF37]/25 to-[#D4AF37]/10 border-[#D4AF37] text-white shadow-[0_0_12px_rgba(212,175,55,0.25)] font-bold scale-[1.02]"
+                            : "bg-[#0C0E14] border-gray-700/80 text-gray-300 hover:text-white hover:border-gray-500 hover:bg-[#121620]"
+                        }`}
+                      >
+                        <span className={isSelected ? "text-[#D4AF37]" : ""}>{preset.label}</span>
+                        {preset.days && (
+                          <span className="text-[10px] text-gray-400 font-normal">
+                            ({preset.days} วัน)
+                          </span>
+                        )}
+                        {preset.id === "custom" && (
+                          <span className="text-[10px] text-amber-400/80 font-normal">
+                            กำหนดเอง
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Custom Date/Days Controls (when "ตั้งเอง" is selected) */}
+                {eaDurationPreset === "custom" && (
+                  <div className="p-3 rounded-xl bg-[#0C0E14] border border-[#D4AF37]/40 space-y-2.5">
+                    <div className="text-[11px] font-semibold text-[#D4AF37] flex items-center gap-1.5">
+                      <CalendarPlus className="w-3.5 h-3.5" />
+                      <span>กำหนดวันหมดอายุ หรือ ป้อนจำนวนวันด้วยตนเอง</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-medium text-gray-300 mb-1">
+                          📅 เลือกวันหมดอายุจากปฏิทิน
+                        </label>
+                        <input
+                          type="date"
+                          value={eaCustomDate}
+                          min={getDateStringFromDays(1)}
+                          onChange={(e) => {
+                            const newDate = e.target.value;
+                            setEaCustomDate(newDate);
+                            const days = getDaysFromDateString(newDate);
+                            setEaFormData((prev) => ({ ...prev, duration_days: days }));
+                          }}
+                          className="w-full px-3 py-2 rounded-xl bg-[#090B10] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37] [color-scheme:dark]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-medium text-gray-300 mb-1">
+                          🔢 หรือ ป้อนจำนวนวัน (วัน)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="เช่น 45 หรือ 120 วัน"
+                          value={eaFormData.duration_days}
+                          onChange={(e) => {
+                            const days = Math.max(1, Number(e.target.value) || 1);
+                            setEaFormData((prev) => ({ ...prev, duration_days: days }));
+                            setEaCustomDate(getDateStringFromDays(days));
+                          }}
+                          className="w-full px-3 py-2 rounded-xl bg-[#090B10] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Live Preview Info Banner */}
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200">
+                  <Calendar className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
+                  <span>
+                    <strong>วันหมดอายุโดยประมาณ:</strong> {formatThaiDatePreview(eaFormData.duration_days)} (รวม {eaFormData.duration_days} วัน นับจากวันที่อนุมัติสิทธิ์)
+                  </span>
+                </div>
               </div>
 
               {/* 3 Image Slots Management */}
