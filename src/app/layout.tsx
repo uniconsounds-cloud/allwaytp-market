@@ -48,13 +48,6 @@ export default function RootLayout({
                 <ShieldCheck className="w-4 h-4 text-gray-400" />
                 <span>ลงทะเบียนสิทธิ์</span>
               </Link>
-              <Link 
-                href="/admin" 
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gold-500/30 bg-surface-100 hover:bg-surface-200 hover:border-gold-500/60 text-xs text-gray-300 hover:text-white transition-all shadow-sm"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Admin Backoffice</span>
-              </Link>
             </nav>
           </div>
         </header>
@@ -88,9 +81,6 @@ export default function RootLayout({
               >
                 โบรกเกอร์ Versus Trade
               </a>
-              <Link href="/admin" className="text-gray-400 hover:text-gray-200 transition-colors">
-                ระบบจัดการสิทธิ์หลังบ้าน
-              </Link>
               <Link href="/mql-guide" className="text-gray-400 hover:text-gray-200 transition-colors">
                 MQL Integration
               </Link>

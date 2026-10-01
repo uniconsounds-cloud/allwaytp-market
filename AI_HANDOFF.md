@@ -73,3 +73,28 @@
     - อัปเดต `NEXT_PUBLIC_APP_URL` ใน `.env.local` เป็น `https://allwaytp.com`
     - อัปเดต API endpoint ใน `AllwayTP_License.mqh` และเอกสารคู่มือทั้งหมดเป็น `https://allwaytp.com`
 
+## 2026-10-01 — Antigravity — พัฒนาระบบ Admin Auth, การจัดการสินค้า EA และ Technical Dashboard
+
+- **คำสั่งผู้ใช้:**
+  1. ซ่อนหน้าและปุ่มแอดมินจากผู้ใช้ทั่วไปบนเว็บไซต์
+  2. จัดทำระบบเข้าสู่ระบบสำหรับแอดมิน 2 ระดับ:
+     - **Super Admin (คุณโจ้):** ทำหน้าที่ดูแลปรับปรุงเว็บทั้งหมด สิทธิ์เต็มทุกหน้า + มีหน้าเฉพาะสำหรับดูข้อมูลทางเทคนิค สถิติ ปริมาณการสื่อสารกับพอร์ต (WebRequest Heartbeat) และการใช้งานฐานข้อมูล
+     - **EA Admin (ครูชัย/ฝ่ายพัฒนา EA):** ดูแลจัดการพอร์ต อนุมัติสิทธิ์ และจัดการสินค้า EA
+  3. แอดมินสามารถ สร้าง ลบ แก้ไขสินค้า EA และตั้งค่าต่างๆ ได้โดยตรงบนเว็บ
+  4. อธิบายวิธีเข้าใช้งานสำหรับแอดมิน และวิธีเพิ่มแอดมินใหม่เข้าสู่ระบบ
+- **งานที่ดำเนินการและไฟล์ที่สร้าง/แก้ไข:**
+  - `src/lib/auth.ts`: ระบบ Session Token และ Cookie แบบ HMAC-SHA256 ปลอดภัย ไร้ dependency หน่วง
+  - `src/app/api/admin/auth/route.ts`: API Login (`POST`), Session Check (`GET`), Logout (`DELETE`)
+  - `src/app/api/admin/eas/route.ts`: API CRUD สำหรับสินค้า EA (List, Create, Edit, Delete)
+  - `src/app/api/admin/system-health/route.ts`: API ดึงสถิติทางเทคนิคสำหรับ Super Admin เท่านั้น (Request logs, Telemetry 24h, DB counts, RAM/Node metrics)
+  - `src/app/admin/login/page.tsx`: หน้า Login สไตล์ Luxury Gold & Charcoal พร้อมระบบจดจำสิทธิ์
+  - `src/app/layout.tsx`: ลบปุ่ม Admin Backoffice ออกจาก Navbar และ Footer ของผู้ใช้ทั่วไป
+  - `src/app/admin/page.tsx`:
+    - ตรวจสอบ Session ก่อนเข้า หากยังไม่ล็อกอินจะ redirect ไป `/admin/login` อัตโนมัติ
+    - เพิ่มแท็บ "จัดการสิทธิ์พอร์ต & Telemetry"
+    - เพิ่มแท็บ "จัดการสินค้า EA (Catalog CRUD)" เพิ่ม/แก้/ลบ/เปิด-ปิดสินค้า พร้อม Modal
+    - เพิ่มแท็บ "ระบบวิเคราะห์ทางเทคนิค & ฐานข้อมูล" เฉพาะ Super Admin (EA Admin จะไม่เห็นแท็บนี้)
+    - ปุ่ม Logout และแสดงป้ายสถานะบทบาท
+  - `supabase/schema.sql`: เพิ่มคำสั่งสร้างตาราง `admin_users` และ Seed แอดมินตั้งต้น
+  - ตรวจสอบการ Build ด้วย `npm run build` ผ่าน 100%
+

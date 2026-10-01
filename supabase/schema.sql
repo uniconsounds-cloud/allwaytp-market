@@ -132,3 +132,25 @@ VALUES
         '1.0.0'
     )
 ON CONFLICT (code) DO NOTHING;
+
+-- 4. Table: admin_users (Admins authentication & role-based access)
+CREATE TABLE IF NOT EXISTS public.admin_users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'EA_ADMIN' CHECK (role IN ('SUPER_ADMIN', 'EA_ADMIN')),
+    password TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS for admin_users
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+
+-- Insert Initial Default Admins (if not exists)
+INSERT INTO public.admin_users (email, name, role, password)
+VALUES 
+    ('admin@allwaytp.com', 'Super Admin (Tech & System)', 'SUPER_ADMIN', 'admin1234'),
+    ('ea.partner@allwaytp.com', 'EA Developer Admin', 'EA_ADMIN', 'eapartner1234')
+ON CONFLICT (email) DO NOTHING;
