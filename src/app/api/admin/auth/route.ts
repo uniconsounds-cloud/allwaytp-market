@@ -50,17 +50,29 @@ export async function POST(req: NextRequest) {
         };
       }
     } else {
-      // Default fallback credentials if table has not been initialized yet in Supabase
-      if (cleanEmail === "admin@allwaytp.com" && password === "admin1234") {
+      // Default fallback credentials
+      if (cleanEmail === "juntarasate@gmail.com" && password === "admin1234") {
+        authenticatedUser = {
+          email: "juntarasate@gmail.com",
+          name: "superadmin",
+          role: "SUPER_ADMIN",
+        };
+      } else if (cleanEmail === "bctutor123@gmail.com" && password === "admin1234") {
+        authenticatedUser = {
+          email: "bctutor123@gmail.com",
+          name: "admin",
+          role: "EA_ADMIN",
+        };
+      } else if (cleanEmail === "admin@allwaytp.com" && password === "admin1234") {
         authenticatedUser = {
           email: "admin@allwaytp.com",
-          name: "Super Admin (Technical & System)",
+          name: "superadmin",
           role: "SUPER_ADMIN",
         };
       } else if (cleanEmail === "ea.partner@allwaytp.com" && password === "eapartner1234") {
         authenticatedUser = {
           email: "ea.partner@allwaytp.com",
-          name: "EA Developer Admin",
+          name: "admin",
           role: "EA_ADMIN",
         };
       }

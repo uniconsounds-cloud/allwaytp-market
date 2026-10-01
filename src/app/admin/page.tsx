@@ -497,14 +497,14 @@ export default function AdminDashboard() {
           />
           <div>
             <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border font-mono ${
                 isSuperAdmin 
                   ? "bg-amber-500/10 text-[#D4AF37] border-amber-500/40" 
                   : "bg-blue-500/10 text-blue-400 border-blue-500/30"
               }`}>
-                {isSuperAdmin ? "👑 Super Admin" : "🛡️ EA Partner Admin"}
+                {isSuperAdmin ? "👑 superadmin" : "🛡️ admin"}
               </span>
-              <span className="text-xs text-gray-500 font-mono">
+              <span className="text-xs text-gray-400 font-mono">
                 {currentUser?.email}
               </span>
             </div>

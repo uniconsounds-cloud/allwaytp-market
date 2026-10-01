@@ -151,6 +151,8 @@ ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
 -- Insert Initial Default Admins (if not exists)
 INSERT INTO public.admin_users (email, name, role, password)
 VALUES 
-    ('admin@allwaytp.com', 'Super Admin (Tech & System)', 'SUPER_ADMIN', 'admin1234'),
-    ('ea.partner@allwaytp.com', 'EA Developer Admin', 'EA_ADMIN', 'eapartner1234')
+    ('juntarasate@gmail.com', 'superadmin', 'SUPER_ADMIN', 'admin1234'),
+    ('bctutor123@gmail.com', 'admin', 'EA_ADMIN', 'admin1234'),
+    ('admin@allwaytp.com', 'superadmin', 'SUPER_ADMIN', 'admin1234'),
+    ('ea.partner@allwaytp.com', 'admin', 'EA_ADMIN', 'eapartner1234')
 ON CONFLICT (email) DO NOTHING;
