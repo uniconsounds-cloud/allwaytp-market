@@ -69,4 +69,7 @@
   - `src/app/page.tsx`: ปรับหน้าแรกใหม่ทั้งหมด โชว์ภาพกล่อง 3D Box ทั้ง 3 รุ่นอย่างสวยงาม คมชัด จัดวางสเปกแบบ Gold Accent และ Banner ร่วมกับ Versus Trade
   - `src/app/register-license/page.tsx`, `src/app/admin/page.tsx`, `src/app/mql-guide/page.tsx`: ปรับธีมสีทอง/ดำ/เทา และลบชื่อบุคคลออกทั้งหมด 100%
   - รันคำสั่ง `npm run build` ผ่านสมบูรณ์ พร้อม Deploy สู่ Production
+  - **เชื่อมต่อโดเมนจริง `allwaytp.com`:**
+    - อัปเดต `NEXT_PUBLIC_APP_URL` ใน `.env.local` เป็น `https://allwaytp.com`
+    - อัปเดต API endpoint ใน `AllwayTP_License.mqh` และเอกสารคู่มือทั้งหมดเป็น `https://allwaytp.com`
 

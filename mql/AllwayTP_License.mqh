@@ -12,7 +12,7 @@
 //+------------------------------------------------------------------+
 //| CONFIGURATION                                                    |
 //+------------------------------------------------------------------+
-#define ALLWAYTP_API_URL "https://allwaytp-market.vercel.app/api/license/verify"
+#define ALLWAYTP_API_URL "https://allwaytp.com/api/license/verify"
 
 // หากไม่ได้กำหนดไว้ที่หัวไฟล์ EA ให้ใช้ค่าเริ่มต้น
 #ifndef ALLWAYTP_EA_CODE
@@ -105,7 +105,7 @@ bool _ExecuteLicenseCheck(string eaCode, bool isInitial)
       {
          Alert("[AllwayTP] กรุณาเปิดใช้งาน WebRequest ใน MT4/MT5!\n" +
                "Tools -> Options -> แท็บ Expert Advisors -> ติ๊ก 'Allow WebRequest' และใส่:\n" +
-               "https://allwaytp-market.vercel.app");
+               "https://allwaytp.com");
       }
       return g_allwaytp_is_authorized;
    }

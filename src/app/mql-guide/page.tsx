@@ -212,7 +212,7 @@ export default function MqlGuidePage() {
           <li>
             ดับเบิ้ลคลิกเพิ่ม URL:
             <div className="mt-2 p-2.5 rounded-lg bg-black/60 border border-gray-800 text-[#D4AF37] font-mono text-xs inline-block">
-              https://allwaytp-market.vercel.app
+              https://allwaytp.com
             </div>
           </li>
           <li>กด <b>OK</b> เพื่อบันทึก</li>

@@ -93,6 +93,6 @@ void OnTick()
 3. ติ๊กถูกที่ **"Allow WebRequest for listed URL"**
 4. ดับเบิ้ลคลิกเพิ่ม URL:
    ```text
-   https://allwaytp-market.vercel.app
+   https://allwaytp.com
    ```
 5. กด **OK** บันทึกเรียบร้อย
