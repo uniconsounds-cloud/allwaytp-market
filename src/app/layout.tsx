@@ -95,9 +95,6 @@ export default function RootLayout({
               >
                 โบรกเกอร์ Versus Trade
               </a>
-              <Link href="/mql-guide" className="text-gray-400 hover:text-gray-200 transition-colors">
-                MQL Integration
-              </Link>
             </div>
           </div>
         </footer>

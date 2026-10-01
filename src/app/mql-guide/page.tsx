@@ -1,13 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Copy, Check, FileCode2, Download, Sparkles } from "lucide-react";
+import { ArrowLeft, Copy, Check, FileCode2, Download, Sparkles, RefreshCw } from "lucide-react";
 
 export default function MqlGuidePage() {
+  const router = useRouter();
+  const [authChecking, setAuthChecking] = useState(true);
   const [copied1, setCopied1] = useState(false);
   const [copied2, setCopied2] = useState(false);
   const [copied3, setCopied3] = useState(false);
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/admin/auth");
+        if (!res.ok) {
+          router.replace("/admin/login");
+          return;
+        }
+        const data = await res.json();
+        if (!data.authenticated) {
+          router.replace("/admin/login");
+          return;
+        }
+      } catch {
+        router.replace("/admin/login");
+      } finally {
+        setAuthChecking(false);
+      }
+    }
+    checkAuth();
+  }, [router]);
 
   const snippet1 = `// ============================================================
 // >>> START COPY TO EA (ส่วนที่ 1: กำหนดรหัส EA และ Include) >>>
@@ -39,6 +64,17 @@ export default function MqlGuidePage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-[#090A0E] flex items-center justify-center text-slate-400">
+        <div className="flex flex-col items-center gap-3">
+          <RefreshCw className="w-7 h-7 text-amber-400 animate-spin" />
+          <span className="text-xs font-mono">กำลังตรวจสอบสิทธิ์การเข้าถึงคู่มือ...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 space-y-10">

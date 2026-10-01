@@ -95,5 +95,7 @@
   - `src/app/admin/page.tsx`: ปรับปรุง `handleLogout` ให้ทำการ `supabase.auth.signOut()` พร้อมล้าง Backend Cookie และ Redirect แบบล้าง Session สมบูรณ์ ป้องกันการเด้งกลับเข้าหน้าแอดมิน
   - `src/app/admin/login/page.tsx`: ตัดลูปการ Auto-sync ที่หน้า Login เพื่อให้แสดงหน้า Login อย่างเสถียรและออกจากระบบได้อย่างแท้จริง
   - `src/components/AdminNavbarBadge.tsx`: เพิ่มการตรวจจับ Session สดจาก Supabase แบบเรียลไทม์ ทำให้ปุ่มแผงควบคุมปรากฏทันทีที่เข้าหน้าเว็บ
+  - `src/app/layout.tsx`: ลบลิงก์ `MQL Integration` ออกจาก Footer ทั่วไป เพื่อไม่ให้ผู้ใช้ทั่วไปมองเห็น
+  - `src/app/mql-guide/page.tsx`: เพิ่มระบบป้องกันสิทธิ์ (Auth Protection) เฉพาะแอดมินที่ล็อกอินแล้วเท่านั้นจึงจะสามารถเข้าดูหน้านี้ได้ หากผู้ใช้ทั่วไปเข้าผ่าน URL จะถูกผลักไปหน้าล็อกอินทันที
   - ตรวจสอบการ Build ด้วย `npm run build` ผ่าน 100%
 
