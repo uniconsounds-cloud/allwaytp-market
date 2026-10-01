@@ -92,7 +92,8 @@
   - `src/app/layout.tsx`: ติดตั้ง `AdminNavbarBadge` เข้ากับ Header Navbar
   - `src/app/api/admin/eas/route.ts`: API CRUD สำหรับสินค้า EA (List, Create, Edit, Delete)
   - `src/app/api/admin/system-health/route.ts`: API ดึงสถิติทางเทคนิคสำหรับ Super Admin เท่านั้น
-  - `src/app/admin/login/page.tsx`: หน้า Login พร้อมปุ่ม Google Sign-In และระบบ Auto-sync
-  - `src/app/admin/page.tsx`: แผงควบคุมระบบพร้อมแท็บแยกตามสิทธิ์
+  - `src/app/admin/login/page.tsx`: ปรับหน้า Login ให้เป็นหน้าล็อกอินทั่วไป ลบข้อความตัวอย่างลางๆ (Placeholders) และกล่องระบุสิทธิ์แอดมินด้านล่างออกทั้งหมดตามที่คุณโจ้สั่ง
+  - `src/app/layout.tsx`: ติดตั้ง Favicon และ Apple Touch Icon (Zen X Academy Gold Logo) ใน Metadata และ Head
+  - `public/icon.png`, `public/favicon-32x32.png`, `public/favicon.ico`, `src/app/icon.png`: จัดทำชุด Favicon ไอคอนแท็บเบราว์เซอร์ครบทุกขนาด
   - ตรวจสอบการ Build ด้วย `npm run build` ผ่าน 100%
 

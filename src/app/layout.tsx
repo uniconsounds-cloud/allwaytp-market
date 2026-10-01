@@ -7,6 +7,14 @@ import AdminNavbarBadge from "@/components/AdminNavbarBadge";
 export const metadata: Metadata = {
   title: "AllwayTP x Zen X Academy | Elite Automated Trading Marketplace",
   description: "ศูนย์รวม Expert Advisors (EA) ระดับพรีเมียม โดย Zen X Academy และระบบตรวจสอบสิทธิ์ใบอนุญาต สำหรับโบรกเกอร์ Versus Trade",
+  icons: {
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/icon.png",
+    shortcut: "/favicon-32x32.png",
+  },
 };
 
 export default function RootLayout({
@@ -16,6 +24,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th">
+      <head>
+        <link rel="icon" href="/favicon-32x32.png" sizes="any" />
+        <link rel="apple-touch-icon" href="/icon.png" />
+      </head>
       <body className="min-h-screen flex flex-col bg-[#090A0E] text-gray-100 antialiased selection:bg-[#D4AF37]/30 selection:text-white">
         {/* Navigation */}
         <header className="sticky top-0 z-50 backdrop-blur-md bg-[#090A0E]/85 border-b border-gray-800/80">

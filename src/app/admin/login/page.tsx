@@ -113,15 +113,11 @@ function LoginFormContent() {
             />
           </div>
         </Link>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 border border-amber-500/20 text-amber-300 mb-2">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Admin Control Portal</span>
-        </div>
         <h1 className="text-2xl font-bold tracking-tight text-white">
-          เข้าสู่ระบบจัดการ <span className="text-amber-400">AllwayTP</span>
+          เข้าสู่ระบบ <span className="text-amber-400">AllwayTP</span>
         </h1>
         <p className="text-xs text-slate-400 mt-1">
-          พอร์ทัลควบคุมลิขสิทธิ์ EA จัดการสินค้า และมอนิเตอร์ระบบ
+          พอร์ทัลบริการจัดการและตรวจสอบระบบ
         </p>
       </div>
 
@@ -182,7 +178,7 @@ function LoginFormContent() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              อีเมลผู้ดูแลระบบ (Email)
+              อีเมล (Email)
             </label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -190,9 +186,8 @@ function LoginFormContent() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="juntarasate@gmail.com หรือ bctutor123@gmail.com"
                 required
-                className="w-full bg-[#0a0d14] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-400/70 focus:ring-1 focus:ring-amber-400/50 transition font-mono"
+                className="w-full bg-[#0a0d14] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400/70 focus:ring-1 focus:ring-amber-400/50 transition font-mono"
               />
             </div>
           </div>
@@ -207,9 +202,8 @@ function LoginFormContent() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
                 required
-                className="w-full bg-[#0a0d14] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400/70 focus:ring-1 focus:ring-amber-400/50 transition"
+                className="w-full bg-[#0a0d14] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400/70 focus:ring-1 focus:ring-amber-400/50 transition"
               />
             </div>
           </div>
@@ -220,40 +214,15 @@ function LoginFormContent() {
             className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold text-xs rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.3)] transition transform active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
-              <span>กำลังตรวจสอบสิทธิ์...</span>
+              <span>กำลังตรวจสอบข้อมูล...</span>
             ) : (
               <>
-                <span>เข้าสู่ระบบด้วยรหัสผ่าน</span>
+                <span>เข้าสู่ระบบ</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
         </form>
-
-        {/* Account Info Notice */}
-        <div className="mt-6 pt-5 border-t border-slate-800/80 text-[11px] text-slate-400 space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="font-medium text-slate-300">สิทธิ์ผู้ดูแลระบบ:</span>
-            <span className="text-amber-400 font-mono">Authorized Accounts</span>
-          </div>
-          <div className="bg-black/40 rounded-xl p-3 border border-slate-800 text-[11px] space-y-1.5 font-mono">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-300">juntarasate@gmail.com</span>
-              <span className="text-amber-400 font-bold text-[10px] bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                superadmin
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-300">bctutor123@gmail.com</span>
-              <span className="text-blue-400 font-bold text-[10px] bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
-                admin
-              </span>
-            </div>
-          </div>
-          <p className="text-[10px] text-slate-500 leading-normal pt-1">
-            * สามารถกด "เข้าสู่ระบบด้วย Google" ได้ทันที หรือป้อนอีเมลและรหัสผ่านเริ่มต้น (admin1234)
-          </p>
-        </div>
       </div>
 
       {/* Back to Home link */}
