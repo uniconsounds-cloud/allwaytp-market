@@ -1526,143 +1526,152 @@ export default function AdminDashboard() {
       {/* MODAL: ADD LICENSE                                           */}
       {/* ============================================================ */}
       {showAddLicenseModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-surface-100 border border-gold-500/30 p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-800">
-              <h2 className="text-lg font-bold text-white">เพิ่มและเปิดสิทธิ์พอร์ตใหม่</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-hidden">
+          <div className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl bg-[#0F121A] border border-gold-500/30 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-800 bg-[#121622] shrink-0">
+              <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />
+                <span>เพิ่มและเปิดสิทธิ์พอร์ตใหม่</span>
+              </h2>
               <button 
                 onClick={() => setShowAddLicenseModal(false)}
-                className="text-gray-400 hover:text-white"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                title="ปิดหน้าต่าง"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateLicense} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">เลือกรุ่น EA</label>
-                <select
-                  value={newEaCode}
-                  onChange={(e) => setNewEaCode(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-                >
-                  {eaList.length > 0 ? (
-                    eaList.map((ea) => (
-                      <option key={ea.code} value={ea.code}>{ea.name} ({ea.code})</option>
-                    ))
-                  ) : (
-                    <>
-                      <option value="RECON_100">Recon AiAuto100</option>
-                      <option value="RANGER_500">Ranger AiAuto500</option>
-                      <option value="DELTA_1500">Delta AiAuto1500</option>
-                    </>
-                  )}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">เลขพอร์ตเทรด MT4 / MT5 *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="เช่น 1004567"
-                  value={newAccountNumber}
-                  onChange={(e) => setNewAccountNumber(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white font-mono text-xs focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">เซิร์ฟเวอร์โบรกเกอร์</label>
-                <input
-                  type="text"
-                  value={newBrokerServer}
-                  onChange={(e) => setNewBrokerServer(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">ชื่อลูกค้า (ถ้ามี)</label>
-                <input
-                  type="text"
-                  placeholder="ชื่อลูกค้าหรือเจ้าของพอร์ต"
-                  value={newClientName}
-                  onChange={(e) => setNewClientName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">
-                  อีเมลลูกค้า (สำหรับการล็อกอินเข้าแดชบอร์ด)
-                </label>
-                <input
-                  type="email"
-                  placeholder="เช่น trader@gmail.com"
-                  value={newClientEmail}
-                  onChange={(e) => setNewClientEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-                />
-                <span className="text-[10px] text-gray-500 mt-0.5 block">
-                  เมื่อลูกค้าใช้อีเมลนี้ล็อกอิน จะมองเห็นพอร์ตและปุ่มดาวน์โหลด EA ในหน้าแดชบอร์ดทันที
-                </span>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">เบอร์โทร / LINE ID</label>
-                <input
-                  type="text"
-                  placeholder="ช่องทางติดต่อ"
-                  value={newClientPhone}
-                  onChange={(e) => setNewClientPhone(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-
-              {/* Expiration date duration selector */}
-              <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">ระยะเวลา / วันหมดอายุของสิทธิ์</label>
-                <select
-                  value={newExpiryPreset}
-                  onChange={(e) => setNewExpiryPreset(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-                >
-                  <option value="30">30 วัน (ทดลองใช้งาน 1 เดือน)</option>
-                  <option value="90">90 วัน (3 เดือน)</option>
-                  <option value="180">180 วัน (6 เดือน)</option>
-                  <option value="365">1 ปี (365 วัน)</option>
-                  <option value="lifetime">ตลอดชีพ (Lifetime - ไม่จำกัดเวลา)</option>
-                  <option value="custom">กำหนดวันที่หมดอายุเอง...</option>
-                </select>
-              </div>
-
-              {newExpiryPreset === "custom" && (
+            <form onSubmit={handleCreateLicense} className="flex flex-col flex-1 overflow-hidden min-h-0">
+              {/* Scrollable Body */}
+              <div className="overflow-y-auto p-4 sm:p-5 space-y-4 text-xs flex-1">
                 <div>
-                  <label className="block font-semibold text-gray-300 mb-1.5">เลือกวันที่หมดอายุ</label>
+                  <label className="block font-semibold text-gray-300 mb-1.5">เลือกรุ่น EA</label>
+                  <select
+                    value={newEaCode}
+                    onChange={(e) => setNewEaCode(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                  >
+                    {eaList.length > 0 ? (
+                      eaList.map((ea) => (
+                        <option key={ea.code} value={ea.code}>{ea.name} ({ea.code})</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="RECON_100">Recon AiAuto100</option>
+                        <option value="RANGER_500">Ranger AiAuto500</option>
+                        <option value="DELTA_1500">Delta AiAuto1500</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1.5">เลขพอร์ตเทรด MT4 / MT5 *</label>
                   <input
-                    type="date"
+                    type="text"
                     required
-                    value={newCustomExpiryDate}
-                    onChange={(e) => setNewCustomExpiryDate(e.target.value)}
+                    placeholder="เช่น 1004567"
+                    value={newAccountNumber}
+                    onChange={(e) => setNewAccountNumber(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white font-mono text-xs focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1.5">เซิร์ฟเวอร์โบรกเกอร์</label>
+                  <input
+                    type="text"
+                    value={newBrokerServer}
+                    onChange={(e) => setNewBrokerServer(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
                   />
                 </div>
-              )}
 
-              <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">สถานะเริ่มต้น</label>
-                <select
-                  value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value as "ACTIVE" | "PENDING")}
-                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-                >
-                  <option value="ACTIVE">เปิดสิทธิ์ทันที (ACTIVE)</option>
-                  <option value="PENDING">รอตรวจสอบ (PENDING)</option>
-                </select>
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1.5">ชื่อลูกค้า (ถ้ามี)</label>
+                  <input
+                    type="text"
+                    placeholder="ชื่อลูกค้าหรือเจ้าของพอร์ต"
+                    value={newClientName}
+                    onChange={(e) => setNewClientName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1.5">
+                    อีเมลลูกค้า (สำหรับการล็อกอินเข้าแดชบอร์ด)
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="เช่น trader@gmail.com"
+                    value={newClientEmail}
+                    onChange={(e) => setNewClientEmail(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                  />
+                  <span className="text-[10px] text-gray-500 mt-0.5 block">
+                    เมื่อลูกค้าใช้อีเมลนี้ล็อกอิน จะมองเห็นพอร์ตและปุ่มดาวน์โหลด EA ในหน้าแดชบอร์ดทันที
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1.5">เบอร์โทร / LINE ID</label>
+                  <input
+                    type="text"
+                    placeholder="ช่องทางติดต่อ"
+                    value={newClientPhone}
+                    onChange={(e) => setNewClientPhone(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                {/* Expiration date duration selector */}
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1.5">ระยะเวลา / วันหมดอายุของสิทธิ์</label>
+                  <select
+                    value={newExpiryPreset}
+                    onChange={(e) => setNewExpiryPreset(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                  >
+                    <option value="30">30 วัน (ทดลองใช้งาน 1 เดือน)</option>
+                    <option value="90">90 วัน (3 เดือน)</option>
+                    <option value="180">180 วัน (6 เดือน)</option>
+                    <option value="365">1 ปี (365 วัน)</option>
+                    <option value="lifetime">ตลอดชีพ (Lifetime - ไม่จำกัดเวลา)</option>
+                    <option value="custom">กำหนดวันที่หมดอายุเอง...</option>
+                  </select>
+                </div>
+
+                {newExpiryPreset === "custom" && (
+                  <div>
+                    <label className="block font-semibold text-gray-300 mb-1.5">เลือกวันที่หมดอายุ</label>
+                    <input
+                      type="date"
+                      required
+                      value={newCustomExpiryDate}
+                      onChange={(e) => setNewCustomExpiryDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1.5">สถานะเริ่มต้น</label>
+                  <select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value as "ACTIVE" | "PENDING")}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                  >
+                    <option value="ACTIVE">เปิดสิทธิ์ทันที (ACTIVE)</option>
+                    <option value="PENDING">รอตรวจสอบ (PENDING)</option>
+                  </select>
+                </div>
               </div>
 
-              <div className="pt-3 flex gap-3">
+              {/* Sticky Footer */}
+              <div className="flex gap-3 p-4 border-t border-gray-800 bg-[#121622] shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowAddLicenseModal(false)}
@@ -1686,21 +1695,28 @@ export default function AdminDashboard() {
       {/* MODAL: CREATE / EDIT EA PRODUCT                              */}
       {/* ============================================================ */}
       {showEAModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl bg-surface-100 border border-gold-500/30 p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-800">
-              <h2 className="text-lg font-bold text-white">
-                {editingEA ? "แก้ไขสินค้า EA" : "เพิ่มสินค้า EA ใหม่"}
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-hidden">
+          <div className="relative w-full max-w-xl max-h-[90vh] flex flex-col rounded-2xl bg-[#0F121A] border border-gold-500/40 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header - Always visible at top */}
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-800 bg-[#121622] shrink-0">
+              <div className="flex items-center gap-2.5">
+                <Package className="w-5 h-5 text-[#D4AF37]" />
+                <h2 className="text-base sm:text-lg font-bold text-white">
+                  {editingEA ? `แก้ไขสินค้า EA: ${editingEA.name}` : "เพิ่มสินค้า EA ใหม่"}
+                </h2>
+              </div>
               <button 
                 onClick={() => setShowEAModal(false)}
-                className="text-gray-400 hover:text-white"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                title="ปิดหน้าต่าง (Close)"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveEA} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveEA} className="flex flex-col flex-1 overflow-hidden min-h-0">
+              {/* Scrollable Form Body */}
+              <div className="overflow-y-auto p-4 sm:p-6 space-y-4 text-xs flex-1">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-gray-300 mb-1.5">
@@ -1939,7 +1955,10 @@ export default function AdminDashboard() {
                 </label>
               </div>
 
-              <div className="pt-3 flex gap-3">
+              </div>
+
+              {/* Sticky Footer - Always visible at bottom */}
+              <div className="flex gap-3 p-4 border-t border-gray-800 bg-[#121622] shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowEAModal(false)}
