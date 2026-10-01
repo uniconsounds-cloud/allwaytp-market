@@ -37,6 +37,7 @@ import {
   HardDrive
 } from "lucide-react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase/client";
 
 interface AdminUser {
   email: string;
@@ -279,10 +280,12 @@ export default function AdminDashboard() {
   // Handle Logout
   const handleLogout = async () => {
     try {
+      await supabase.auth.signOut();
       await fetch("/api/admin/auth", { method: "DELETE" });
-      router.push("/admin/login");
+      window.location.href = "/admin/login?logged_out=1";
     } catch (err) {
       console.error("Logout failed", err);
+      window.location.href = "/admin/login?logged_out=1";
     }
   };
 

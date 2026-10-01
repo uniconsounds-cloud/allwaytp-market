@@ -22,23 +22,10 @@ function LoginFormContent() {
       setError(decodeURIComponent(errorParam));
     }
 
-    // Auto-sync if user just returned with an active Supabase session
-    const checkActiveSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user?.email) {
-          const res = await fetch("/api/admin/auth/google-sync", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: session.user.email }),
-          });
-          if (res.ok) {
-            window.location.href = "/admin";
-          }
-        }
-      } catch {}
-    };
-    checkActiveSession();
+    const isLoggedOut = searchParams.get("logged_out");
+    if (isLoggedOut) {
+      supabase.auth.signOut().catch(() => {});
+    }
   }, [searchParams]);
 
   const handleGoogleLogin = async () => {
