@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { DownloadCloud, ShieldCheck, ArrowRight, TrendingUp, CheckCircle, ExternalLink, Zap, Award, Sparkles } from "lucide-react";
 import EACard, { EAItem } from "@/components/EACard";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
-export default function Home() {
-  const eaList: EAItem[] = [
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const initialEaList: EAItem[] = [
     {
       code: "RECON_100",
       name: "Recon AiAuto100",
@@ -71,6 +74,53 @@ export default function Home() {
       ]
     },
   ];
+
+  let displayEAs: EAItem[] = initialEaList;
+
+  try {
+    const { data: dbEas } = await supabaseAdmin
+      .from("eas")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: true });
+
+    if (dbEas && dbEas.length > 0) {
+      displayEAs = initialEaList.map((initEa) => {
+        const found = dbEas.find((d) => d.code === initEa.code);
+        if (!found) return initEa;
+
+        let parsedImages = initEa.images;
+        let parsedDesc = found.description || initEa.description;
+
+        if (found.description && found.description.includes("<!--META:")) {
+          try {
+            const match = found.description.match(/<!--META:(.*?)-->/);
+            if (match && match[1]) {
+              const meta = JSON.parse(match[1]);
+              if (Array.isArray(meta.images) && meta.images.length > 0) {
+                parsedImages = meta.images;
+              }
+              parsedDesc = found.description.replace(/<!--META:(.*?)-->/, "").trim();
+            }
+          } catch {}
+        } else if (Array.isArray(found.images) && found.images.length > 0) {
+          parsedImages = found.images;
+        }
+
+        return {
+          ...initEa,
+          name: found.name || initEa.name,
+          description: parsedDesc || initEa.description,
+          images: parsedImages,
+          pair: found.pair || initEa.pair,
+          timeframe: found.timeframe || initEa.timeframe,
+          minDeposit: `${Number(found.min_deposit).toLocaleString()} ${found.currency_type || "USD"}`,
+        };
+      });
+    }
+  } catch (err) {
+    // fallback to initial list
+  }
 
   return (
     <div className="space-y-28 py-10">
@@ -200,7 +250,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {eaList.map((ea) => (
+          {displayEAs.map((ea) => (
             <EACard key={ea.code} ea={ea} />
           ))}
         </div>

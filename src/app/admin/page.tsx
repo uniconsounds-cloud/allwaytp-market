@@ -518,8 +518,29 @@ export default function AdminDashboard() {
 
   // Open EA Modal (Add or Edit)
   const openEAModal = (ea?: EAProduct) => {
+    const DEFAULT_EA_IMAGES: Record<string, string[]> = {
+      RECON_100: [
+        "/images/ea-recon-100.jpg",
+        "/images/9371_0.jpg",
+        "/images/9372_0.jpg",
+      ],
+      RANGER_500: [
+        "/images/ea-ranger-500.jpg",
+        "/images/9375_0.jpg",
+        "/images/9376_0.jpg",
+      ],
+      DELTA_1500: [
+        "/images/ea-delta-1500.jpg",
+        "/images/9378_0.jpg",
+        "/images/9379_0.jpg",
+      ],
+    };
+
     if (ea) {
       setEditingEA(ea);
+      const defaultImgs = DEFAULT_EA_IMAGES[ea.code] || [];
+      const currentImgs = Array.isArray(ea.images) && ea.images.length > 0 ? ea.images : defaultImgs;
+
       setEaFormData({
         code: ea.code,
         name: ea.name,
@@ -531,7 +552,7 @@ export default function AdminDashboard() {
         download_url: ea.download_url || "",
         version: ea.version,
         is_active: ea.is_active,
-        images: Array.isArray(ea.images) ? [...ea.images] : [],
+        images: [...currentImgs],
         duration_days: ea.duration_days || 365,
       });
     } else {
@@ -1832,33 +1853,50 @@ export default function AdminDashboard() {
 
               {/* 3 Image Slots Management */}
               <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">
-                  รูปภาพสินค้า (สามารถเพิ่มได้สูงสุด 3 รูปภาพ)
-                </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="font-semibold text-gray-200 flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-[#D4AF37]" />
+                    <span>รูปภาพสินค้า (แสดงในแคตตาล็อกหน้าเว็บ 3 รูปภาพ)</span>
+                  </label>
+                  <span className="text-[10px] text-gray-400">
+                    คลิกเลือกรูปจากเครื่องเพื่อเปลี่ยนได้ทันที
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[0, 1, 2].map((slotIndex) => {
                     const imgUrl = eaFormData.images[slotIndex];
                     const isUploading = uploadingImageIndex === slotIndex;
 
+                    const slotTitle = slotIndex === 0 
+                      ? "1. ภาพกล่องหลัก (Main)" 
+                      : slotIndex === 1 
+                      ? "2. ภาพมุมที่สอง" 
+                      : "3. ภาพมุมที่สาม";
+
                     return (
                       <div
                         key={slotIndex}
-                        className="p-2.5 rounded-xl bg-[#0C0E14] border border-gray-700 flex flex-col justify-between space-y-2"
+                        className="p-3 rounded-xl bg-[#090B10] border border-gray-700/80 hover:border-gold-500/50 transition-all flex flex-col justify-between space-y-2.5 shadow-md"
                       >
-                        <div className="text-[10px] text-gray-400 font-semibold flex items-center justify-between">
-                          <span>รูปที่ {slotIndex + 1}</span>
+                        <div className="text-[11px] font-bold text-gray-300 flex items-center justify-between">
+                          <span className="flex items-center gap-1 text-[#D4AF37]">
+                            {slotTitle}
+                          </span>
                           {imgUrl && (
                             <button
                               type="button"
                               onClick={() => handleRemoveImage(slotIndex)}
-                              className="text-red-400 hover:text-red-300 p-0.5"
+                              className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-950/40 text-[10px] flex items-center gap-0.5 transition-colors"
                               title="ลบรูปนี้"
                             >
                               <Trash2 className="w-3 h-3" />
+                              <span>ลบ</span>
                             </button>
                           )}
                         </div>
 
+                        {/* Image Preview Box */}
                         {imgUrl ? (
                           <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-800 bg-black">
                             <img
@@ -1866,45 +1904,51 @@ export default function AdminDashboard() {
                               alt={`Slot ${slotIndex + 1}`}
                               className="w-full h-full object-cover"
                             />
+                            {isUploading && (
+                              <div className="absolute inset-0 bg-black/75 flex items-center justify-center gap-1.5 text-[#D4AF37] text-xs font-semibold">
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                <span>กำลังอัปโหลด...</span>
+                              </div>
+                            )}
                           </div>
                         ) : (
-                          <label className="aspect-video rounded-lg border border-dashed border-gray-700 hover:border-gold-500/60 flex flex-col items-center justify-center cursor-pointer transition-all bg-surface-100/40 hover:bg-surface-100">
+                          <div className="aspect-video rounded-lg border-2 border-dashed border-gray-800 bg-[#0d1017] flex flex-col items-center justify-center p-3 text-center">
                             {isUploading ? (
-                              <RefreshCw className="w-4 h-4 text-amber-400 animate-spin" />
+                              <div className="flex flex-col items-center gap-1 text-[#D4AF37] text-xs font-semibold">
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                <span>กำลังอัปโหลด...</span>
+                              </div>
                             ) : (
                               <>
-                                <ImageIcon className="w-4 h-4 text-gray-500 mb-1" />
-                                <span className="text-[10px] text-gray-400">+ อัปโหลดรูป</span>
+                                <ImageIcon className="w-6 h-6 text-gray-600 mb-1" />
+                                <span className="text-[10px] text-gray-500">ยังไม่มีรูปภาพ</span>
                               </>
                             )}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              disabled={isUploading}
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleUploadImage(file, slotIndex);
-                              }}
-                            />
-                          </label>
+                          </div>
                         )}
 
-                        <input
-                          type="text"
-                          placeholder="หรือระบุ URL รูป..."
-                          value={imgUrl || ""}
-                          onChange={(e) => {
-                            const updated = [...eaFormData.images];
-                            updated[slotIndex] = e.target.value;
-                            setEaFormData({ ...eaFormData, images: updated.slice(0, 3) });
-                          }}
-                          className="w-full px-2 py-1 rounded-lg bg-surface-100 border border-gray-800 text-[10px] text-gray-300 focus:outline-none focus:border-[#D4AF37]"
-                        />
+                        {/* Action: Select / Change directly from device */}
+                        <label className="cursor-pointer flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-surface-200 hover:bg-surface-300 text-gray-200 hover:text-white border border-gray-700 hover:border-gold-500/50 text-xs font-semibold transition-all">
+                          <Upload className="w-3.5 h-3.5 text-[#D4AF37]" />
+                          <span>{imgUrl ? "🔄 เปลี่ยนรูปภาพนี้" : "➕ เลือกรูปจากเครื่อง"}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            disabled={isUploading}
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleUploadImage(file, slotIndex);
+                            }}
+                          />
+                        </label>
                       </div>
                     );
                   })}
                 </div>
+                <span className="text-[10px] text-gray-500 mt-1 block">
+                  💡 รูปภาพจะถูกจัดเก็บในระบบความเร็วสูง (Global Edge CDN) โดยอัตโนมัติ ไม่เปลืองพื้นที่ และไม่ต้องนำลิงก์รูปมาใส่เอง
+                </span>
               </div>
 
               {/* EA Binary / Zip File Upload */}
