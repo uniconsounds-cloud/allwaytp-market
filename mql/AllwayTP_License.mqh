@@ -122,6 +122,13 @@ bool _ExecuteLicenseCheck(string eaCode, bool isInitial)
               "\nBroker: Versus Trade\n");
       return true;
    }
+   else if(StringFind(response, "\"status\":\"EXPIRED\"") >= 0)
+   {
+      g_allwaytp_is_authorized = false;
+      Alert("[AllwayTP] พอร์ต ", accountNumber, " สิทธิ์การใช้งาน EA หมดอายุแล้ว (License Expired)");
+      Comment("\n>>> AllwayTP License: [ EXPIRED ] <<<\nสิทธิ์หมดอายุ กรุณาติดต่อผู้ดูแลเพื่อต่ออายุสิทธิ์\n");
+      return false;
+   }
    else if(StringFind(response, "\"status\":\"REVOKED\"") >= 0)
    {
       g_allwaytp_is_authorized = false;

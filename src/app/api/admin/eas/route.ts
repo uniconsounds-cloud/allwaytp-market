@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { code, name, description, pair, timeframe, min_deposit, currency_type, download_url, version, is_active } = body;
+    const { code, name, description, pair, timeframe, min_deposit, currency_type, download_url, version, is_active, images, duration_days } = body;
 
     if (!code || !name) {
       return NextResponse.json({ error: "รหัส EA (code) และชื่อ EA (name) จำเป็นต้องระบุ" }, { status: 400 });
@@ -44,23 +44,30 @@ export async function POST(req: NextRequest) {
 
     const cleanCode = String(code).trim().toUpperCase();
 
+    const insertPayload: Record<string, any> = {
+      code: cleanCode,
+      name: name.trim(),
+      description: description?.trim() || null,
+      pair: pair?.trim() || "XAUUSD",
+      timeframe: timeframe?.trim() || "M15",
+      min_deposit: Number(min_deposit) || 100,
+      currency_type: currency_type || "USD",
+      recommended_broker: "Versus Trade",
+      download_url: download_url?.trim() || null,
+      version: version?.trim() || "1.0.0",
+      is_active: is_active !== undefined ? is_active : true,
+    };
+
+    if (Array.isArray(images)) {
+      insertPayload.images = images.slice(0, 3);
+    }
+    if (duration_days !== undefined) {
+      insertPayload.duration_days = Number(duration_days) || 365;
+    }
+
     const { data, error } = await supabaseAdmin
       .from("eas")
-      .insert([
-        {
-          code: cleanCode,
-          name: name.trim(),
-          description: description?.trim() || null,
-          pair: pair?.trim() || "XAUUSD",
-          timeframe: timeframe?.trim() || "M15",
-          min_deposit: Number(min_deposit) || 100,
-          currency_type: currency_type || "USD",
-          recommended_broker: "Versus Trade",
-          download_url: download_url?.trim() || null,
-          version: version?.trim() || "1.0.0",
-          is_active: is_active !== undefined ? is_active : true,
-        },
-      ])
+      .insert([insertPayload])
       .select()
       .single();
 
@@ -83,7 +90,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { id, name, description, pair, timeframe, min_deposit, currency_type, download_url, version, is_active } = body;
+    const { id, name, description, pair, timeframe, min_deposit, currency_type, download_url, version, is_active, images, duration_days } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing EA id" }, { status: 400 });
@@ -102,6 +109,8 @@ export async function PATCH(req: NextRequest) {
     if (download_url !== undefined) updatePayload.download_url = download_url?.trim() || null;
     if (version !== undefined) updatePayload.version = version.trim();
     if (is_active !== undefined) updatePayload.is_active = is_active;
+    if (Array.isArray(images)) updatePayload.images = images.slice(0, 3);
+    if (duration_days !== undefined) updatePayload.duration_days = Number(duration_days);
 
     const { data, error } = await supabaseAdmin
       .from("eas")

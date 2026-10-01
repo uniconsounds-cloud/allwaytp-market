@@ -32,15 +32,24 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    const now = Date.now();
+    const processedLicenses = licenses?.map((l) => {
+      if (l.expires_at && new Date(l.expires_at).getTime() < now && l.status === "ACTIVE") {
+        return { ...l, status: "EXPIRED" as const };
+      }
+      return l;
+    }) || [];
+
     // Calculate quick statistics
     const stats = {
-      total: licenses?.length || 0,
-      active: licenses?.filter(l => l.status === "ACTIVE").length || 0,
-      pending: licenses?.filter(l => l.status === "PENDING").length || 0,
-      revoked: licenses?.filter(l => l.status === "REVOKED").length || 0,
+      total: processedLicenses.length,
+      active: processedLicenses.filter(l => l.status === "ACTIVE").length,
+      pending: processedLicenses.filter(l => l.status === "PENDING").length,
+      revoked: processedLicenses.filter(l => l.status === "REVOKED").length,
+      expired: processedLicenses.filter(l => l.status === "EXPIRED").length,
     };
 
-    return NextResponse.json({ licenses, stats });
+    return NextResponse.json({ licenses: processedLicenses, stats });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

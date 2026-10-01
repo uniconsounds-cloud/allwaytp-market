@@ -34,7 +34,13 @@ import {
   Lock,
   UserCheck,
   CheckCircle,
-  HardDrive
+  HardDrive,
+  Upload,
+  Image as ImageIcon,
+  Calendar,
+  CalendarPlus,
+  Download,
+  Mail
 } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
@@ -82,6 +88,8 @@ interface EAProduct {
   download_url: string | null;
   version: string;
   is_active: boolean;
+  images?: string[];
+  duration_days?: number;
   created_at: string;
 }
 
@@ -138,7 +146,7 @@ export default function AdminDashboard() {
 
   // Licenses Tab State
   const [licenses, setLicenses] = useState<License[]>([]);
-  const [stats, setStats] = useState({ total: 0, active: 0, pending: 0, revoked: 0, inactiveAlerts: 0 });
+  const [stats, setStats] = useState({ total: 0, active: 0, pending: 0, revoked: 0, expired: 0, inactiveAlerts: 0 });
   const [loadingLicenses, setLoadingLicenses] = useState(true);
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [filterEa, setFilterEa] = useState("ALL");
@@ -152,15 +160,36 @@ export default function AdminDashboard() {
   const [newAccountNumber, setNewAccountNumber] = useState("");
   const [newBrokerServer, setNewBrokerServer] = useState("VersusTrade-Live");
   const [newClientName, setNewClientName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
   const [newClientPhone, setNewClientPhone] = useState("");
   const [newStatus, setNewStatus] = useState<"ACTIVE" | "PENDING">("ACTIVE");
+  const [newExpiryPreset, setNewExpiryPreset] = useState("365"); // 30, 90, 180, 365, lifetime, custom
+  const [newCustomExpiryDate, setNewCustomExpiryDate] = useState("");
+
+  // Quick Extend Expiry Popover
+  const [extendingLicenseId, setExtendingLicenseId] = useState<string | null>(null);
 
   // EA Catalog Tab State
   const [eaList, setEaList] = useState<EAProduct[]>([]);
   const [loadingEAs, setLoadingEAs] = useState(false);
   const [showEAModal, setShowEAModal] = useState(false);
   const [editingEA, setEditingEA] = useState<EAProduct | null>(null);
-  const [eaFormData, setEaFormData] = useState({
+  const [uploadingImageIndex, setUploadingImageIndex] = useState<number | null>(null);
+  const [uploadingEAFile, setUploadingEAFile] = useState(false);
+  const [eaFormData, setEaFormData] = useState<{
+    code: string;
+    name: string;
+    description: string;
+    pair: string;
+    timeframe: string;
+    min_deposit: number;
+    currency_type: string;
+    download_url: string;
+    version: string;
+    is_active: boolean;
+    images: string[];
+    duration_days: number;
+  }>({
     code: "",
     name: "",
     description: "",
@@ -171,6 +200,8 @@ export default function AdminDashboard() {
     download_url: "",
     version: "1.0.0",
     is_active: true,
+    images: [],
+    duration_days: 365,
   });
 
   // Technical Health Tab State (Super Admin Only)
@@ -333,6 +364,23 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!newAccountNumber.trim()) return;
 
+    // Calculate expiration date
+    let calculatedExpiresAt: string | null = null;
+    if (newExpiryPreset === "lifetime") {
+      calculatedExpiresAt = null;
+    } else if (newExpiryPreset === "custom") {
+      if (newCustomExpiryDate) {
+        calculatedExpiresAt = new Date(`${newCustomExpiryDate}T23:59:59.999Z`).toISOString();
+      }
+    } else {
+      const days = parseInt(newExpiryPreset, 10);
+      if (!isNaN(days) && days > 0) {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        calculatedExpiresAt = d.toISOString();
+      }
+    }
+
     try {
       const res = await fetch("/api/admin/licenses", {
         method: "POST",
@@ -342,8 +390,10 @@ export default function AdminDashboard() {
           account_number: newAccountNumber.trim(),
           broker_server: newBrokerServer,
           client_name: newClientName.trim() || null,
+          client_email: newClientEmail.trim() || null,
           client_phone: newClientPhone.trim() || null,
           status: newStatus,
+          expires_at: calculatedExpiresAt,
         }),
       });
 
@@ -351,7 +401,10 @@ export default function AdminDashboard() {
         setShowAddLicenseModal(false);
         setNewAccountNumber("");
         setNewClientName("");
+        setNewClientEmail("");
         setNewClientPhone("");
+        setNewExpiryPreset("365");
+        setNewCustomExpiryDate("");
         await fetchLicenses();
       } else {
         const data = await res.json();
@@ -359,6 +412,107 @@ export default function AdminDashboard() {
       }
     } catch (err: any) {
       alert(`บันทึกไม่สำเร็จ: ${err.message}`);
+    }
+  };
+
+  // Quick Extend Expiry for a license
+  const handleExtendLicense = async (lic: License, daysToAdd: number | null) => {
+    try {
+      setActionLoading(lic.id);
+      let newExpiresAt: string | null = null;
+      if (daysToAdd !== null) {
+        const baseDate = lic.expires_at && new Date(lic.expires_at).getTime() > Date.now()
+          ? new Date(lic.expires_at)
+          : new Date();
+        baseDate.setDate(baseDate.getDate() + daysToAdd);
+        newExpiresAt = baseDate.toISOString();
+      }
+
+      const res = await fetch("/api/admin/licenses", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: lic.id,
+          expires_at: newExpiresAt,
+          status: "ACTIVE", // Auto-reactivate
+          approved_by: currentUser?.name || "Admin",
+        }),
+      });
+
+      if (res.ok) {
+        setExtendingLicenseId(null);
+        await fetchLicenses();
+      } else {
+        const d = await res.json();
+        alert(`ขยายเวลาไม่สำเร็จ: ${d.error}`);
+      }
+    } catch (err: any) {
+      alert(`ขยายเวลาไม่สำเร็จ: ${err.message}`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Upload EA Image
+  const handleUploadImage = async (file: File, index: number) => {
+    try {
+      setUploadingImageIndex(index);
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("type", "image");
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+
+      if (res.ok && data.url) {
+        const updatedImages = [...eaFormData.images];
+        updatedImages[index] = data.url;
+        setEaFormData((prev) => ({ ...prev, images: updatedImages.filter(Boolean).slice(0, 3) }));
+      } else {
+        alert(`อัปโหลดรูปภาพไม่สำเร็จ: ${data.error || "เกิดข้อผิดพลาด"}`);
+      }
+    } catch (err: any) {
+      alert(`อัปโหลดรูปภาพไม่สำเร็จ: ${err.message}`);
+    } finally {
+      setUploadingImageIndex(null);
+    }
+  };
+
+  // Remove EA Image
+  const handleRemoveImage = (indexToRemove: number) => {
+    setEaFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== indexToRemove),
+    }));
+  };
+
+  // Upload EA Binary / Zip File
+  const handleUploadEAFile = async (file: File) => {
+    try {
+      setUploadingEAFile(true);
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("type", "ea");
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+
+      if (res.ok && data.url) {
+        setEaFormData((prev) => ({ ...prev, download_url: data.url }));
+        alert(`อัปโหลดไฟล์ EA สำเร็จแล้ว: ${data.filename}`);
+      } else {
+        alert(`อัปโหลดไฟล์ EA ไม่สำเร็จ: ${data.error || "เกิดข้อผิดพลาด"}`);
+      }
+    } catch (err: any) {
+      alert(`อัปโหลดไฟล์ EA ไม่สำเร็จ: ${err.message}`);
+    } finally {
+      setUploadingEAFile(false);
     }
   };
 
@@ -377,6 +531,8 @@ export default function AdminDashboard() {
         download_url: ea.download_url || "",
         version: ea.version,
         is_active: ea.is_active,
+        images: Array.isArray(ea.images) ? [...ea.images] : [],
+        duration_days: ea.duration_days || 365,
       });
     } else {
       setEditingEA(null);
@@ -391,6 +547,8 @@ export default function AdminDashboard() {
         download_url: "",
         version: "1.0.0",
         is_active: true,
+        images: [],
+        duration_days: 365,
       });
     }
     setShowEAModal(true);
@@ -688,9 +846,17 @@ export default function AdminDashboard() {
               <div className="text-2xl font-black text-red-400 font-mono">{stats.revoked}</div>
             </div>
 
+            <div className="p-5 rounded-2xl bg-surface-100 border border-gray-700 bg-gray-900/40">
+              <div className="flex items-center justify-between text-gray-400 text-xs mb-2">
+                <span>หมดอายุ (Expired)</span>
+                <Clock className="w-4 h-4 text-gray-400" />
+              </div>
+              <div className="text-2xl font-black text-gray-300 font-mono">{stats.expired || 0}</div>
+            </div>
+
             <div className="p-5 rounded-2xl bg-surface-100 border border-rose-500/30 bg-rose-950/20 col-span-2 md:col-span-1">
               <div className="flex items-center justify-between text-rose-400 text-xs mb-2">
-                <span>แจ้งเตือนไม่ได้รัน (&gt;3 วัน)</span>
+                <span>ไม่ได้รัน (&gt;3 วัน)</span>
                 <AlertTriangle className="w-4 h-4 text-rose-400" />
               </div>
               <div className="text-2xl font-black text-rose-400 font-mono">{stats.inactiveAlerts}</div>
@@ -704,7 +870,7 @@ export default function AdminDashboard() {
                 <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
                   type="text"
-                  placeholder="ค้นหาเลขพอร์ต, ชื่อลูกค้า, เบอร์โทร..."
+                  placeholder="ค้นหาเลขพอร์ต, ชื่อลูกค้า, อีเมล, เบอร์โทร..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && fetchLicenses()}
@@ -726,8 +892,9 @@ export default function AdminDashboard() {
                 className="px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
               >
                 <option value="ALL">สถานะทั้งหมด</option>
-                <option value="PENDING">รออนุมัติ (Pending)</option>
                 <option value="ACTIVE">เปิดสิทธิ์ (Active)</option>
+                <option value="PENDING">รออนุมัติ (Pending)</option>
+                <option value="EXPIRED">หมดอายุ (Expired)</option>
                 <option value="REVOKED">ระงับสิทธิ์ (Revoked)</option>
               </select>
 
@@ -759,9 +926,10 @@ export default function AdminDashboard() {
                 <thead className="bg-[#0C0E14] border-b border-gray-800 text-gray-400 uppercase tracking-wider">
                   <tr>
                     <th className="py-3.5 px-4 font-semibold">เลขพอร์ตเทรด</th>
-                    <th className="py-3.5 px-4 font-semibold">EA / เจ้าของพอร์ต</th>
+                    <th className="py-3.5 px-4 font-semibold">EA / ข้อมูลลูกค้า</th>
                     <th className="py-3.5 px-4 font-semibold">ยอดเงินปัจจุบัน (Telemetry)</th>
                     <th className="py-3.5 px-4 font-semibold">สถานะการรัน (Last Seen)</th>
+                    <th className="py-3.5 px-4 font-semibold">วันหมดอายุ / อายุสิทธิ์</th>
                     <th className="py-3.5 px-4 font-semibold">สถานะสิทธิ์</th>
                     <th className="py-3.5 px-4 font-semibold text-right">การจัดการ</th>
                   </tr>
@@ -769,13 +937,13 @@ export default function AdminDashboard() {
                 <tbody className="divide-y divide-gray-800/80">
                   {loadingLicenses ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-gray-500">
+                      <td colSpan={7} className="py-12 text-center text-gray-500">
                         กำลังโหลดข้อมูลสิทธิ์และพอร์ต...
                       </td>
                     </tr>
                   ) : licenses.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-gray-500">
+                      <td colSpan={7} className="py-12 text-center text-gray-500">
                         ไม่พบรายการสิทธิ์ตามเงื่อนไขที่เลือก
                       </td>
                     </tr>
@@ -796,9 +964,15 @@ export default function AdminDashboard() {
 
                           <td className="py-4 px-4">
                             <span className="font-semibold text-gray-200 block">{lic.eas?.name || lic.ea_code}</span>
-                            <div className="text-[11px] text-gray-400">
-                              {lic.client_name ? `${lic.client_name} ` : ""}
-                              {lic.client_phone ? `(${lic.client_phone})` : ""}
+                            <div className="text-[11px] text-gray-400 space-y-0.5">
+                              {lic.client_name && <div>{lic.client_name}</div>}
+                              {lic.client_email && (
+                                <div className="text-gray-400 font-mono text-[10px] flex items-center gap-1">
+                                  <Mail className="w-2.5 h-2.5 text-[#D4AF37]" />
+                                  <span>{lic.client_email}</span>
+                                </div>
+                              )}
+                              {lic.client_phone && <div>Tel: {lic.client_phone}</div>}
                             </div>
                           </td>
 
@@ -836,6 +1010,48 @@ export default function AdminDashboard() {
                             )}
                           </td>
 
+                          {/* Expiration Date Column */}
+                          <td className="py-4 px-4">
+                            {lic.expires_at ? (
+                              <div className="space-y-1">
+                                <div className="font-mono text-gray-200 text-xs">
+                                  {new Date(lic.expires_at).toLocaleDateString("th-TH", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  })}
+                                </div>
+                                {(() => {
+                                  const msLeft = new Date(lic.expires_at).getTime() - Date.now();
+                                  const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+                                  if (daysLeft <= 0) {
+                                    return (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-400 bg-red-950/40 px-2 py-0.5 rounded border border-red-500/30">
+                                        หมดอายุแล้ว
+                                      </span>
+                                    );
+                                  } else if (daysLeft <= 7) {
+                                    return (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/30">
+                                        เหลือ {daysLeft} วัน
+                                      </span>
+                                    );
+                                  } else {
+                                    return (
+                                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-500/20">
+                                        เหลือ {daysLeft} วัน
+                                      </span>
+                                    );
+                                  }
+                                })()}
+                              </div>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#D4AF37] bg-amber-950/20 px-2 py-0.5 rounded border border-gold-500/30">
+                                ตลอดชีพ (Lifetime)
+                              </span>
+                            )}
+                          </td>
+
                           <td className="py-4 px-4">
                             {lic.status === "ACTIVE" && (
                               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-gold-500/10 text-[#D4AF37] border border-gold-500/30">
@@ -853,14 +1069,58 @@ export default function AdminDashboard() {
                               </span>
                             )}
                             {lic.status === "EXPIRED" && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-700 text-gray-300">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-700 text-gray-300 border border-gray-600">
                                 หมดอายุ
                               </span>
                             )}
                           </td>
 
                           <td className="py-4 px-4 text-right">
-                            <div className="inline-flex items-center gap-1.5 justify-end">
+                            <div className="inline-flex items-center gap-1.5 justify-end relative">
+                              {/* Quick Extend Expiry Button & Dropdown */}
+                              <div className="relative">
+                                <button
+                                  onClick={() => setExtendingLicenseId(extendingLicenseId === lic.id ? null : lic.id)}
+                                  disabled={actionLoading === lic.id}
+                                  className="px-2 py-1 rounded-lg bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white border border-gray-700 text-[11px] font-medium transition-all"
+                                  title="ต่ออายุสิทธิ์"
+                                >
+                                  ต่ออายุ ▾
+                                </button>
+
+                                {extendingLicenseId === lic.id && (
+                                  <div className="absolute right-0 top-full mt-1.5 z-20 w-36 py-1 bg-[#12151e] border border-gold-500/40 rounded-xl shadow-2xl text-left">
+                                    <div className="px-3 py-1 text-[10px] text-gray-400 border-b border-gray-800 font-semibold">
+                                      เลือกขยายเวลา:
+                                    </div>
+                                    <button
+                                      onClick={() => handleExtendLicense(lic, 30)}
+                                      className="w-full text-left px-3 py-1.5 text-xs text-gray-200 hover:bg-amber-500/10 hover:text-[#D4AF37]"
+                                    >
+                                      + 30 วัน
+                                    </button>
+                                    <button
+                                      onClick={() => handleExtendLicense(lic, 90)}
+                                      className="w-full text-left px-3 py-1.5 text-xs text-gray-200 hover:bg-amber-500/10 hover:text-[#D4AF37]"
+                                    >
+                                      + 90 วัน
+                                    </button>
+                                    <button
+                                      onClick={() => handleExtendLicense(lic, 365)}
+                                      className="w-full text-left px-3 py-1.5 text-xs text-gray-200 hover:bg-amber-500/10 hover:text-[#D4AF37]"
+                                    >
+                                      + 1 ปี (365 วัน)
+                                    </button>
+                                    <button
+                                      onClick={() => handleExtendLicense(lic, null)}
+                                      className="w-full text-left px-3 py-1.5 text-xs text-amber-400 hover:bg-amber-500/10 font-bold"
+                                    >
+                                      ตลอดชีพ (Lifetime)
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+
                               {lic.status !== "ACTIVE" && (
                                 <button
                                   onClick={() => updateLicenseStatus(lic.id, "ACTIVE")}
@@ -953,6 +1213,20 @@ export default function AdminDashboard() {
                       </span>
                     </div>
 
+                    {/* Image Thumbnails (up to 3) */}
+                    {ea.images && ea.images.length > 0 && (
+                      <div className="flex items-center gap-2 pt-1">
+                        {ea.images.map((imgUrl, idx) => (
+                          <img
+                            key={idx}
+                            src={imgUrl}
+                            alt={`${ea.name} thumbnail ${idx + 1}`}
+                            className="w-14 h-10 object-cover rounded-lg border border-gray-700 shadow-sm"
+                          />
+                        ))}
+                      </div>
+                    )}
+
                     <div>
                       <h3 className="text-base font-bold text-white">{ea.name}</h3>
                       <p className="text-xs text-gray-400 mt-1 line-clamp-2">
@@ -972,12 +1246,20 @@ export default function AdminDashboard() {
                         </span>
                       </div>
                       <div>
-                        <span className="text-gray-500 block text-[10px]">เวอร์ชัน</span>
-                        <span className="font-mono text-gray-300">v{ea.version}</span>
+                        <span className="text-gray-500 block text-[10px]">เวอร์ชัน / อายุสิทธิ์</span>
+                        <span className="font-mono text-gray-300">
+                          v{ea.version} • {ea.duration_days ? `${ea.duration_days} วัน` : "ตลอดชีพ"}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-gray-500 block text-[10px]">โบรกเกอร์แนะนำ</span>
-                        <span className="text-gray-300">{ea.recommended_broker}</span>
+                        <span className="text-gray-500 block text-[10px]">ไฟล์ EA</span>
+                        {ea.download_url ? (
+                          <span className="text-emerald-400 font-mono text-[10px] flex items-center gap-1">
+                            <Download className="w-3 h-3" /> พร้อมดาวน์โหลด
+                          </span>
+                        ) : (
+                          <span className="text-gray-500 text-[10px]">ยังไม่มีไฟล์</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1312,6 +1594,22 @@ export default function AdminDashboard() {
               </div>
 
               <div>
+                <label className="block font-semibold text-gray-300 mb-1.5">
+                  อีเมลลูกค้า (สำหรับการล็อกอินเข้าแดชบอร์ด)
+                </label>
+                <input
+                  type="email"
+                  placeholder="เช่น trader@gmail.com"
+                  value={newClientEmail}
+                  onChange={(e) => setNewClientEmail(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                />
+                <span className="text-[10px] text-gray-500 mt-0.5 block">
+                  เมื่อลูกค้าใช้อีเมลนี้ล็อกอิน จะมองเห็นพอร์ตและปุ่มดาวน์โหลด EA ในหน้าแดชบอร์ดทันที
+                </span>
+              </div>
+
+              <div>
                 <label className="block font-semibold text-gray-300 mb-1.5">เบอร์โทร / LINE ID</label>
                 <input
                   type="text"
@@ -1321,6 +1619,36 @@ export default function AdminDashboard() {
                   className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
+
+              {/* Expiration date duration selector */}
+              <div>
+                <label className="block font-semibold text-gray-300 mb-1.5">ระยะเวลา / วันหมดอายุของสิทธิ์</label>
+                <select
+                  value={newExpiryPreset}
+                  onChange={(e) => setNewExpiryPreset(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                >
+                  <option value="30">30 วัน (ทดลองใช้งาน 1 เดือน)</option>
+                  <option value="90">90 วัน (3 เดือน)</option>
+                  <option value="180">180 วัน (6 เดือน)</option>
+                  <option value="365">1 ปี (365 วัน)</option>
+                  <option value="lifetime">ตลอดชีพ (Lifetime - ไม่จำกัดเวลา)</option>
+                  <option value="custom">กำหนดวันที่หมดอายุเอง...</option>
+                </select>
+              </div>
+
+              {newExpiryPreset === "custom" && (
+                <div>
+                  <label className="block font-semibold text-gray-300 mb-1.5">เลือกวันที่หมดอายุ</label>
+                  <input
+                    type="date"
+                    required
+                    value={newCustomExpiryDate}
+                    onChange={(e) => setNewCustomExpiryDate(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block font-semibold text-gray-300 mb-1.5">สถานะเริ่มต้น</label>
@@ -1469,15 +1797,133 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* Duration Days */}
               <div>
-                <label className="block font-semibold text-gray-300 mb-1.5">ลิงก์ดาวน์โหลดไฟล์ EA (.ex4 / .ex5)</label>
+                <label className="block font-semibold text-gray-300 mb-1.5">
+                  ระยะเวลาอายุสิทธิ์เริ่มต้น (วัน)
+                </label>
                 <input
-                  type="text"
-                  placeholder="https://... หรือ /downloads/..."
-                  value={eaFormData.download_url}
-                  onChange={(e) => setEaFormData({ ...eaFormData, download_url: e.target.value })}
+                  type="number"
+                  placeholder="เช่น 365 (1 ปี) หรือ 0 สำหรับไม่จำกัดเวลา/ตลอดชีพ"
+                  value={eaFormData.duration_days}
+                  onChange={(e) => setEaFormData({ ...eaFormData, duration_days: Number(e.target.value) })}
                   className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
                 />
+                <span className="text-[10px] text-gray-500 mt-0.5 block">
+                  ระบุจำนวนวันที่อนุญาตให้ใช้งานเริ่มต้นเมื่อลูกค้าขอเปิดสิทธิ์ (ค่ามาตรฐาน: 365 วัน)
+                </span>
+              </div>
+
+              {/* 3 Image Slots Management */}
+              <div>
+                <label className="block font-semibold text-gray-300 mb-1.5">
+                  รูปภาพสินค้า (สามารถเพิ่มได้สูงสุด 3 รูปภาพ)
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[0, 1, 2].map((slotIndex) => {
+                    const imgUrl = eaFormData.images[slotIndex];
+                    const isUploading = uploadingImageIndex === slotIndex;
+
+                    return (
+                      <div
+                        key={slotIndex}
+                        className="p-2.5 rounded-xl bg-[#0C0E14] border border-gray-700 flex flex-col justify-between space-y-2"
+                      >
+                        <div className="text-[10px] text-gray-400 font-semibold flex items-center justify-between">
+                          <span>รูปที่ {slotIndex + 1}</span>
+                          {imgUrl && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(slotIndex)}
+                              className="text-red-400 hover:text-red-300 p-0.5"
+                              title="ลบรูปนี้"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+
+                        {imgUrl ? (
+                          <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-800 bg-black">
+                            <img
+                              src={imgUrl}
+                              alt={`Slot ${slotIndex + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <label className="aspect-video rounded-lg border border-dashed border-gray-700 hover:border-gold-500/60 flex flex-col items-center justify-center cursor-pointer transition-all bg-surface-100/40 hover:bg-surface-100">
+                            {isUploading ? (
+                              <RefreshCw className="w-4 h-4 text-amber-400 animate-spin" />
+                            ) : (
+                              <>
+                                <ImageIcon className="w-4 h-4 text-gray-500 mb-1" />
+                                <span className="text-[10px] text-gray-400">+ อัปโหลดรูป</span>
+                              </>
+                            )}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              disabled={isUploading}
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleUploadImage(file, slotIndex);
+                              }}
+                            />
+                          </label>
+                        )}
+
+                        <input
+                          type="text"
+                          placeholder="หรือระบุ URL รูป..."
+                          value={imgUrl || ""}
+                          onChange={(e) => {
+                            const updated = [...eaFormData.images];
+                            updated[slotIndex] = e.target.value;
+                            setEaFormData({ ...eaFormData, images: updated.slice(0, 3) });
+                          }}
+                          className="w-full px-2 py-1 rounded-lg bg-surface-100 border border-gray-800 text-[10px] text-gray-300 focus:outline-none focus:border-[#D4AF37]"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* EA Binary / Zip File Upload */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="font-semibold text-gray-300">
+                    ไฟล์โปรแกรม EA (.ex4 / .ex5 / .zip)
+                  </label>
+                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-[#D4AF37] border border-gold-500/30 text-[11px] font-bold transition-all">
+                    <Upload className={`w-3.5 h-3.5 ${uploadingEAFile ? "animate-spin" : ""}`} />
+                    <span>{uploadingEAFile ? "กำลังอัปโหลด..." : "📤 อัปโหลดไฟล์ EA"}</span>
+                    <input
+                      type="file"
+                      accept=".ex4,.ex5,.zip"
+                      disabled={uploadingEAFile}
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleUploadEAFile(file);
+                      }}
+                    />
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  placeholder="เช่น /downloads/... หรือ ลิงก์ดาวน์โหลด"
+                  value={eaFormData.download_url}
+                  onChange={(e) => setEaFormData({ ...eaFormData, download_url: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white font-mono text-xs focus:outline-none focus:border-[#D4AF37]"
+                />
+                {eaFormData.download_url && (
+                  <div className="mt-1 text-[11px] text-emerald-400 flex items-center gap-1 font-mono">
+                    <Check className="w-3.5 h-3.5" /> ลิงก์พร้อมใช้งาน: {eaFormData.download_url}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2 pt-2">

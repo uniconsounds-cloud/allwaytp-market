@@ -1,12 +1,17 @@
 import Link from "next/link";
 import { DownloadCloud, ShieldCheck, ArrowRight, TrendingUp, CheckCircle, ExternalLink, Zap, Award, Sparkles } from "lucide-react";
+import EACard, { EAItem } from "@/components/EACard";
 
 export default function Home() {
-  const eaList = [
+  const eaList: EAItem[] = [
     {
       code: "RECON_100",
       name: "Recon AiAuto100",
-      image: "/images/ea-recon-100.jpg",
+      images: [
+        "/images/ea-recon-100.jpg",
+        "/images/9371_0.jpg",
+        "/images/9372_0.jpg",
+      ],
       badge: "ระบบเริ่มต้นยอดนิยม",
       badgeColor: "bg-amber-500/10 text-[#D4AF37] border-amber-500/30",
       description: "ระบบเทรดอัจฉริยะผสานพลัง AI ภายใต้การควบคุมของ Master พัฒนาขึ้นเพื่อการบริหารความเสี่ยงระดับสูงสุด เหมาะสำหรับการเริ่มต้นลงทุนอย่างมั่นคง",
@@ -24,7 +29,11 @@ export default function Home() {
     {
       code: "RANGER_500",
       name: "Ranger AiAuto500",
-      image: "/images/ea-ranger-500.jpg",
+      images: [
+        "/images/ea-ranger-500.jpg",
+        "/images/9375_0.jpg",
+        "/images/9376_0.jpg",
+      ],
       badge: "ยอดนิยม (พอร์ต Cent)",
       badgeColor: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
       description: "ออกแบบพิเศษสำหรับกลยุทธ์การเทรดทองคำบนพอร์ต Cent ทนทานต่อสภาวะความผันผวนสูง สะสมกำไรต่อเนื่องด้วยระบบกระจายความเสี่ยงระดับองค์กร",
@@ -42,7 +51,11 @@ export default function Home() {
     {
       code: "DELTA_1500",
       name: "Delta AiAuto1500",
-      image: "/images/ea-delta-1500.jpg",
+      images: [
+        "/images/ea-delta-1500.jpg",
+        "/images/9378_0.jpg",
+        "/images/9379_0.jpg",
+      ],
       badge: "พอร์ต Dollar มืออาชีพ",
       badgeColor: "bg-gradient-to-r from-amber-500/20 to-yellow-600/20 text-[#F5D061] border-amber-400/40",
       description: "สุดยอดอัลกอริทึมเทรดทองคำสำหรับพอร์ต Standard Dollar ระดับสถาบัน คำนวณจุดเข้าออกตามโครงสร้างราคาแม่นยำ พร้อมระบบ Hedging & Trailing กำไร",
@@ -188,89 +201,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {eaList.map((ea) => (
-            <div 
-              key={ea.code} 
-              className="flex flex-col justify-between rounded-3xl bg-surface-100 border border-gray-800 hover:border-gold-500/50 p-6 sm:p-7 transition-all hover:shadow-2xl hover:shadow-amber-950/20 group"
-            >
-              <div>
-                {/* 3D Box Product Image Showcase */}
-                <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-6 bg-black/60 border border-gray-800 group-hover:border-gold-500/30 transition-colors">
-                  <img 
-                    src={ea.image} 
-                    alt={ea.name} 
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#090A0E] via-transparent to-transparent opacity-60" />
-                  
-                  {/* Badge floating on top of image */}
-                  <div className="absolute top-3 left-3">
-                    <span className={`text-[11px] font-bold px-3 py-1 rounded-full border backdrop-blur-md ${ea.badgeColor}`}>
-                      {ea.badge}
-                    </span>
-                  </div>
-
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] text-gray-300 font-mono">
-                    <span className="bg-black/70 px-2 py-0.5 rounded border border-gray-700/60 font-semibold text-[#D4AF37]">
-                      {ea.tagline}
-                    </span>
-                    <span className="text-gray-400">v1.2.0</span>
-                  </div>
-                </div>
-
-                <h3 className="text-2xl font-black text-white mb-2 tracking-tight group-hover:text-[#D4AF37] transition-colors">
-                  {ea.name}
-                </h3>
-                <p className="text-xs text-gray-400 mb-6 leading-relaxed min-h-[55px]">
-                  {ea.description}
-                </p>
-
-                {/* Specs Grid */}
-                <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-[#0C0E14] border border-gray-800/80 mb-6 text-xs">
-                  <div>
-                    <span className="text-gray-500 block text-[11px]">สินทรัพย์ / คู่เงิน</span>
-                    <span className="font-semibold text-gray-200">{ea.pair}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 block text-[11px]">Timeframe</span>
-                    <span className="font-semibold text-gray-200">{ea.timeframe}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 block text-[11px]">เงินทุนแนะนำขั้นต่ำ</span>
-                    <span className="font-bold text-[#D4AF37]">{ea.minDeposit}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 block text-[11px]">ประเภทบัญชี</span>
-                    <span className="font-semibold text-gray-200">{ea.type}</span>
-                  </div>
-                </div>
-
-                {/* Feature Highlights */}
-                <ul className="space-y-2.5 mb-8 text-xs text-gray-300">
-                  {ea.features.map((feat, i) => (
-                    <li key={i} className="flex items-center gap-2.5">
-                      <CheckCircle className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-2.5 pt-4 border-t border-gray-800">
-                <Link 
-                  href={`/register-license?ea=${ea.code}`}
-                  className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3C64F] to-[#B8860B] hover:brightness-110 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-amber-950/30 transition-all"
-                >
-                  <ShieldCheck className="w-4 h-4 text-black" />
-                  <span>ขอรับสิทธิ์ใช้งาน {ea.name}</span>
-                </Link>
-                <div className="text-center">
-                  <span className="text-[11px] text-gray-500">
-                    ต้องลงทะเบียนและได้รับการอนุมัติเลขพอร์ตก่อน EA จึงจะทำงาน
-                  </span>
-                </div>
-              </div>
-            </div>
+            <EACard key={ea.code} ea={ea} />
           ))}
         </div>
       </section>
