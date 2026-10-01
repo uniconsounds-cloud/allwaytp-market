@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
 import { ShieldCheck, LayoutDashboard, DownloadCloud, Sparkles } from "lucide-react";
+import AdminNavbarBadge from "@/components/AdminNavbarBadge";
 
 export const metadata: Metadata = {
   title: "AllwayTP x Zen X Academy | Elite Automated Trading Marketplace",
@@ -39,7 +40,7 @@ export default function RootLayout({
               </div>
             </Link>
 
-            <nav className="flex items-center gap-6 text-sm font-medium text-gray-300">
+            <nav className="flex items-center gap-4 sm:gap-6 text-sm font-medium text-gray-300">
               <Link href="/#eas" className="hover:text-[#D4AF37] transition-colors flex items-center gap-1.5">
                 <DownloadCloud className="w-4 h-4 text-gray-400" />
                 <span className="hidden sm:inline">แคตตาล็อก</span> EA
@@ -48,6 +49,7 @@ export default function RootLayout({
                 <ShieldCheck className="w-4 h-4 text-gray-400" />
                 <span>ลงทะเบียนสิทธิ์</span>
               </Link>
+              <AdminNavbarBadge />
             </nav>
           </div>
         </header>

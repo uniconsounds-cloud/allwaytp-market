@@ -84,19 +84,15 @@
   4. อธิบายวิธีเข้าใช้งานสำหรับแอดมิน และวิธีเพิ่มแอดมินใหม่เข้าสู่ระบบ
 - **งานที่ดำเนินการและไฟล์ที่สร้าง/แก้ไข:**
   - `src/lib/auth.ts`: ระบบ Session Token และ Cookie แบบ HMAC-SHA256 ปลอดภัย ไร้ dependency หน่วง
-  - `src/app/api/admin/auth/route.ts`: API Login (`POST`), Session Check (`GET`), Logout (`DELETE`) รองรับทั้ง Google OAuth และ fallback credentials (`juntarasate@gmail.com` แสดงชื่อ `superadmin`, `bctutor123@gmail.com` แสดงชื่อ `admin`)
-  - `src/app/auth/callback/route.ts`: ตัวรับการ Callback จาก Google OAuth ผ่าน Supabase เชื่อมสิทธิ์อัตโนมัติ
+  - `src/lib/supabase/client.ts`: ปรับมาใช้ `createBrowserClient` จาก `@supabase/ssr` รองรับ PKCE OAuth เต็มรูปแบบ
+  - `src/app/api/admin/auth/route.ts`: API Login (`POST`), Session Check (`GET`), Logout (`DELETE`)
+  - `src/app/api/admin/auth/google-sync/route.ts`: API ซิงก์ Session จาก Google Auth ไปเป็น Admin Session Cookie
+  - `src/app/auth/callback/page.tsx`: หน้า Callback ยืนยันตัวตน Google ทั้งแบบ PKCE Code และ Access Token Hash พร้อมเด้งเข้า `/admin` อัตโนมัติ
+  - `src/components/AdminNavbarBadge.tsx`: ปุ่มแผงควบคุมบน Navbar ที่จะแสดงเฉพาะเมื่อล็อกอินในฐานะแอดมิน (`superadmin` หรือ `admin`) ช่วยให้เข้าถึงหลังบ้านได้จากทุกหน้าของเว็บ
+  - `src/app/layout.tsx`: ติดตั้ง `AdminNavbarBadge` เข้ากับ Header Navbar
   - `src/app/api/admin/eas/route.ts`: API CRUD สำหรับสินค้า EA (List, Create, Edit, Delete)
-  - `src/app/api/admin/system-health/route.ts`: API ดึงสถิติทางเทคนิคสำหรับ Super Admin เท่านั้น (Request logs, Telemetry 24h, DB counts, RAM/Node metrics)
-  - `src/app/admin/login/page.tsx`: หน้า Login รองรับปุ่ม "เข้าสู่ระบบด้วย Google" (Google Sign-In) และกรอกอีเมล/รหัสผ่าน
-  - `src/app/layout.tsx`: ลบปุ่ม Admin Backoffice ออกจาก Navbar และ Footer ของผู้ใช้ทั่วไป
-  - `src/app/admin/page.tsx`:
-    - ตรวจสอบ Session ก่อนเข้า หากยังไม่ล็อกอินจะ redirect ไป `/admin/login` อัตโนมัติ
-    - แสดงป้ายชื่อ `superadmin` สำหรับคุณโจ้ และ `admin` สำหรับครูชัย
-    - เพิ่มแท็บ "จัดการสิทธิ์พอร์ต & Telemetry"
-    - เพิ่มแท็บ "จัดการสินค้า EA (Catalog CRUD)" เพิ่ม/แก้/ลบ/เปิด-ปิดสินค้า พร้อม Modal
-    - เพิ่มแท็บ "ระบบวิเคราะห์ทางเทคนิค & ฐานข้อมูล" เฉพาะ Super Admin (EA Admin จะไม่เห็นแท็บนี้)
-    - ปุ่ม Logout และแสดงป้ายสถานะบทบาท
-  - `supabase/schema.sql`: เพิ่มคำสั่งสร้างตาราง `admin_users` และ Seed บัญชี `juntarasate@gmail.com` และ `bctutor123@gmail.com`
+  - `src/app/api/admin/system-health/route.ts`: API ดึงสถิติทางเทคนิคสำหรับ Super Admin เท่านั้น
+  - `src/app/admin/login/page.tsx`: หน้า Login พร้อมปุ่ม Google Sign-In และระบบ Auto-sync
+  - `src/app/admin/page.tsx`: แผงควบคุมระบบพร้อมแท็บแยกตามสิทธิ์
   - ตรวจสอบการ Build ด้วย `npm run build` ผ่าน 100%
 
