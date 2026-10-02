@@ -176,6 +176,27 @@
   - ตรวจสอบฐานข้อมูล Supabase พบว่าข้อมูลบันทึกได้อย่างถูกต้อง
   - ทดสอบ `npm run build` ผ่านสมบูรณ์ (Compiled successfully, Code 0)
 
+---
+
+### [2026-10-02 - ต่อเนื่อง] โดย Antigravity
+- **ปัญหาที่พบและแก้ไข:**
+  - คุณโจ้แจ้งว่าอัปโหลดรูปภาพบน `www.allwaytp.com` แล้วขึ้นข้อผิดพลาด: `ENOENT: no such file or directory, mkdir '/var/task/public'`
+  - **สาเหตุ:**
+    - บน Production (Vercel Serverless Architecture) สภาพแวดล้อมระบบไฟล์ในคอนเทนเนอร์เป็น Read-Only (`/var/task`) ไม่สามารถสร้างโฟลเดอร์หรือเขียนไฟล์ลงในเครื่องเซิร์ฟเวอร์แบบ Local (`public/images/`) ได้
+  - **การแก้ไข:**
+    - สร้าง Public Bucket ชื่อ `ea-assets` ใน **Supabase Storage** รองรับไฟล์ขนาดสูงสุด 50MB
+    - ปรับปรุง `src/app/api/admin/upload/route.ts` ให้ส่งไฟล์รูปภาพและไฟล์โปรแกรม EA ไปเก็บใน **Supabase Storage** โดยตรงแบบไร้รอยต่อ
+    - ดึง Public URL ของรูปภาพและไฟล์จาก Supabase CDN มาใช้งานอัตโนมัติ ทำให้แสดงผลได้ทั่วโลกด้วยความเร็วสูง และไม่มีปัญหา Read-only filesystem อีกต่อไป
+    - ปรับปรุง `next.config.mjs` รองรับ `remotePatterns` ของ Supabase
+- **ไฟล์ที่เปลี่ยน:**
+  - `src/app/api/admin/upload/route.ts`
+  - `next.config.mjs`
+  - `AI_HANDOFF.md`
+- **ข้อสรุปที่ยืนยันแล้ว:**
+  - ทดสอบอัปโหลดและลบไฟล์ใน Bucket `ea-assets` ของ Supabase ผ่านเรียบร้อย
+  - ทดสอบ `npm run build` ผ่านฉลุย 100% (Compiled successfully, Code 0)
+
+
 
 
 
