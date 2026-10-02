@@ -9,11 +9,11 @@ export const metadata: Metadata = {
   description: "ศูนย์รวม Expert Advisors (EA) ระดับพรีเมียม โดย Zen X Academy และระบบตรวจสอบสิทธิ์ใบอนุญาต สำหรับโบรกเกอร์ Versus Trade",
   icons: {
     icon: [
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icon.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon-32x32.png?v=2", sizes: "32x32", type: "image/png" },
+      { url: "/icon.png?v=2", sizes: "192x192", type: "image/png" },
     ],
-    apple: "/icon.png",
-    shortcut: "/favicon-32x32.png",
+    apple: "/icon.png?v=2",
+    shortcut: "/favicon-32x32.png?v=2",
   },
 };
 
@@ -25,8 +25,8 @@ export default function RootLayout({
   return (
     <html lang="th">
       <head>
-        <link rel="icon" href="/favicon-32x32.png" sizes="any" />
-        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="icon" href="/favicon-32x32.png?v=2" sizes="any" />
+        <link rel="apple-touch-icon" href="/icon.png?v=2" />
       </head>
       <body className="min-h-screen flex flex-col bg-[#090A0E] text-gray-100 antialiased selection:bg-[#D4AF37]/30 selection:text-white">
         {/* Navigation */}

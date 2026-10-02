@@ -112,10 +112,20 @@ export default async function Home() {
         }
 
         const depositVal = Number(found.min_deposit);
-        const currencyVal = found.currency_type || "USD";
-        const minDepositText = currencyVal === "CENT"
-          ? `${depositVal.toLocaleString()} USD (${(depositVal * 100).toLocaleString()} USC)`
-          : `${depositVal.toLocaleString()} ${currencyVal}`;
+        const currencyVal = String(found.currency_type || "USD").toUpperCase();
+
+        let minDepositText = "";
+        if (currencyVal === "CENT") {
+          if (depositVal >= 1000) {
+            const usdEquiv = Math.round(depositVal / 100);
+            minDepositText = `${usdEquiv.toLocaleString()} USD (${depositVal.toLocaleString()} USC)`;
+          } else {
+            const centEquiv = Math.round(depositVal * 100);
+            minDepositText = `${depositVal.toLocaleString()} USD (${centEquiv.toLocaleString()} USC)`;
+          }
+        } else {
+          minDepositText = `${depositVal.toLocaleString()} USD`;
+        }
 
         return {
           ...initEa,

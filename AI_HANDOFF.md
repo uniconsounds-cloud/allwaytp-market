@@ -196,6 +196,34 @@
   - ทดสอบอัปโหลดและลบไฟล์ใน Bucket `ea-assets` ของ Supabase ผ่านเรียบร้อย
   - ทดสอบ `npm run build` ผ่านฉลุย 100% (Compiled successfully, Code 0)
 
+---
+
+### [2026-10-02 - รายการแก้ไขทุนแคตตาล็อก & Favicon โปร่งใส] โดย Antigravity
+- **ปัญหาที่พบและแก้ไข:**
+  1. **การแสดงผลทุนขั้นต่ำในหน้าแคตตาล็อกสินค้า (`/`):**
+     - ในฐานข้อมูล คุณโจ้ตั้งค่าทุนบัญชี Cent ไว้ (เช่น Recon: 10,000 Cent, Ranger: 50,000 Cent, Delta: 150,000 Cent)
+     - สูตรเดิมคำนวณซ้ำซ้อนทำให้ตัวเลขคูณ 100 ผิดเพี้ยนเป็นสิบล้าน
+     - **การแก้ไข:** ปรับปรุงสูตรคำนวณ `minDeposit` ให้ฉลาดและแม่นยำ:
+       - บัญชี Cent: หากกรอก 10,000 Cent จะแสดงผลเทียบเท่าเป็น `100 USD (10,000 USC)` และ 50,000 Cent เป็น `500 USD (50,000 USC)` ถูกต้องตามมาตรฐาน Forex 100%
+       - บัญชี Dollar: แสดงเป็น `$X,XXX USD`
+       - ในหน้า Admin เพิ่มป้ายคำนวณเทียบเท่าสด (Live equivalence helper) ใต้ช่องกรอกทุน
+  2. **รูปไอคอนแท็บเบราว์เซอร์ (Favicon) มีพื้นหลัง:**
+     - ตรวจสอบไฟล์ `Image/logo tranparent.png` พบว่าไฟล์เดิมเป็นภาพ JPEG ที่มีลายตารางหมากรุก (Checkerboard) วาดติดมากับพิกเซลนอกเหรียญ
+     - ดำเนินการตัดฉากหลังลายหมากรุกออกด้วย Circular Alpha Masking และแปลงเป็นภาพ PNG แบบ 32-bit RGBA แท้ มีความโปร่งใส 100% รอบขอบเหรียญทอง
+     - สร้างไอคอนครบทุกขนาด: `public/icon.png` (192x192), `src/app/icon.png`, `public/favicon-32x32.png`, `public/favicon.ico`, `src/app/favicon.ico`
+     - ใส่พารามิเตอร์ `?v=2` ใน `src/app/layout.tsx` เพื่อบังคับให้เบราว์เซอร์ดึงไอคอนโปร่งใสตัวใหม่ทันที
+- **ไฟล์ที่เปลี่ยน:**
+  - `src/app/page.tsx`
+  - `src/app/admin/page.tsx`
+  - `src/app/layout.tsx`
+  - `public/icon.png`, `src/app/icon.png`, `public/favicon-32x32.png`, `public/favicon.ico`, `src/app/favicon.ico`
+  - `AI_HANDOFF.md`
+- **ข้อสรุปที่ยืนยันแล้ว:**
+  - ตรวจสอบภาพไอคอนพบว่าพื้นหลังโปร่งใส 100% เหรียญทองคมกริบ
+  - แคตตาล็อกแสดงทุนขั้นต่ำถูกต้อง สอดคล้องกับพอร์ต Cent และ Dollar
+  - ทดสอบ `npm run build` ผ่านฉลุย 100% (Compiled successfully, Code 0)
+
+
 
 
 

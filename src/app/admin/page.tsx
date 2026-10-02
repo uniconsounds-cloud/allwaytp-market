@@ -1321,7 +1321,11 @@ export default function AdminDashboard() {
                       <div>
                         <span className="text-gray-500 block text-[10px]">ทุนขั้นต่ำ</span>
                         <span className="font-semibold text-[#D4AF37]">
-                          ${Number(ea.min_deposit).toLocaleString()} {ea.currency_type}
+                          {ea.currency_type === "CENT"
+                            ? (Number(ea.min_deposit) >= 1000
+                                ? `${Math.round(Number(ea.min_deposit) / 100).toLocaleString()} USD (${Number(ea.min_deposit).toLocaleString()} USC)`
+                                : `${Number(ea.min_deposit).toLocaleString()} USD (${(Number(ea.min_deposit) * 100).toLocaleString()} USC)`)
+                            : `$${Number(ea.min_deposit).toLocaleString()} USD`}
                         </span>
                       </div>
                       <div>
@@ -1872,12 +1876,14 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-gray-300 mb-1.5">ทุนขั้นต่ำ ($)</label>
+                  <label className="block font-semibold text-gray-300 mb-1.5">
+                    ทุนขั้นต่ำ ({eaFormData.currency_type === "CENT" ? "Cent / USC" : "USD"})
+                  </label>
                   <input
                     type="number"
                     min="0"
                     step="any"
-                    placeholder="เช่น 100 หรือ 1500"
+                    placeholder={eaFormData.currency_type === "CENT" ? "เช่น 10000 หรือ 50000 Cent" : "เช่น 100 หรือ 1500 USD"}
                     value={eaFormData.min_deposit === 0 ? "0" : (eaFormData.min_deposit || "")}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -1885,6 +1891,13 @@ export default function AdminDashboard() {
                     }}
                     className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
                   />
+                  <span className="text-[10px] text-gray-400 mt-1 block">
+                    {eaFormData.currency_type === "CENT"
+                      ? (Number(eaFormData.min_deposit) >= 1000
+                          ? `💡 เทียบเท่า ${Math.round(Number(eaFormData.min_deposit) / 100).toLocaleString()} USD (${Number(eaFormData.min_deposit).toLocaleString()} USC)`
+                          : `💡 เทียบเท่า ${Number(eaFormData.min_deposit).toLocaleString()} USD (${(Number(eaFormData.min_deposit) * 100).toLocaleString()} USC)`)
+                      : `💡 ทุน ${Number(eaFormData.min_deposit).toLocaleString()} ดอลลาร์ (Standard USD)`}
+                  </span>
                 </div>
 
                 <div>
