@@ -1,8 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getCurrentAdmin } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+function noCacheResponse(data: any, status = 200) {
+  return NextResponse.json(data, {
+    status,
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+      "Pragma": "no-cache",
+      "Expires": "0",
+    },
+  });
+}
 
 const DEFAULT_EA_IMAGES: Record<string, string[]> = {
   RECON_100: [
@@ -58,7 +71,7 @@ export async function GET() {
   try {
     const admin = await getCurrentAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return noCacheResponse({ error: "Unauthorized" }, 401);
     }
 
     const { data: eas, error } = await supabaseAdmin
@@ -67,14 +80,14 @@ export async function GET() {
       .order("created_at", { ascending: true });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return noCacheResponse({ error: error.message }, 500);
     }
 
     const processedEAs = eas?.map(parseEAMetadata) || [];
 
-    return NextResponse.json({ eas: processedEAs });
+    return noCacheResponse({ eas: processedEAs });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return noCacheResponse({ error: err.message }, 500);
   }
 }
 
@@ -83,14 +96,14 @@ export async function POST(req: NextRequest) {
   try {
     const admin = await getCurrentAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return noCacheResponse({ error: "Unauthorized" }, 401);
     }
 
     const body = await req.json();
     const { code, name, description, pair, timeframe, min_deposit, currency_type, download_url, version, is_active, images, duration_days } = body;
 
     if (!code || !name) {
-      return NextResponse.json({ error: "รหัส EA (code) และชื่อ EA (name) จำเป็นต้องระบุ" }, { status: 400 });
+      return noCacheResponse({ error: "รหัส EA (code) และชื่อ EA (name) จำเป็นต้องระบุ" }, 400);
     }
 
     const cleanCode = String(code).trim().toUpperCase();
@@ -98,20 +111,22 @@ export async function POST(req: NextRequest) {
     const finalDuration = duration_days !== undefined ? Number(duration_days) : 365;
 
     const metaTag = `\n<!--META:${JSON.stringify({ images: finalImages, duration_days: finalDuration })}-->`;
-    const storedDescription = (description ? description.trim() : "") + metaTag;
+    const storedDescription = (description ? String(description).trim() : "") + metaTag;
+
+    const parsedDeposit = Number(min_deposit);
 
     const insertPayload: Record<string, any> = {
       code: cleanCode,
-      name: name.trim(),
+      name: String(name).trim(),
       description: storedDescription,
-      pair: pair?.trim() || "XAUUSD",
-      timeframe: timeframe?.trim() || "M15",
-      min_deposit: Number(min_deposit) || 100,
-      currency_type: currency_type || "USD",
+      pair: pair ? String(pair).trim() : "XAUUSD",
+      timeframe: timeframe ? String(timeframe).trim() : "M15",
+      min_deposit: !isNaN(parsedDeposit) ? parsedDeposit : 100,
+      currency_type: currency_type ? String(currency_type).trim().toUpperCase() : "USD",
       recommended_broker: "Versus Trade",
-      download_url: download_url?.trim() || null,
-      version: version?.trim() || "1.0.0",
-      is_active: is_active !== undefined ? is_active : true,
+      download_url: download_url ? String(download_url).trim() : null,
+      version: version ? String(version).trim() : "1.0.0",
+      is_active: is_active !== undefined ? Boolean(is_active) : true,
     };
 
     const { data, error } = await supabaseAdmin
@@ -121,12 +136,17 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return noCacheResponse({ error: error.message }, 500);
     }
 
-    return NextResponse.json({ success: true, ea: parseEAMetadata(data) });
+    try {
+      revalidatePath("/");
+      revalidatePath("/admin");
+    } catch {}
+
+    return noCacheResponse({ success: true, ea: parseEAMetadata(data) });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return noCacheResponse({ error: err.message }, 500);
   }
 }
 
@@ -135,34 +155,39 @@ export async function PATCH(req: NextRequest) {
   try {
     const admin = await getCurrentAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return noCacheResponse({ error: "Unauthorized" }, 401);
     }
 
     const body = await req.json();
     const { id, code, name, description, pair, timeframe, min_deposit, currency_type, download_url, version, is_active, images, duration_days } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "Missing EA id" }, { status: 400 });
+      return noCacheResponse({ error: "Missing EA id" }, 400);
     }
 
     const finalImages = Array.isArray(images) ? images.slice(0, 3) : [];
     const finalDuration = duration_days !== undefined ? Number(duration_days) : 365;
     const metaTag = `\n<!--META:${JSON.stringify({ images: finalImages, duration_days: finalDuration })}-->`;
-    const storedDescription = (description !== undefined ? description.trim() : "") + metaTag;
+    const storedDescription = (description !== undefined ? String(description).trim() : "") + metaTag;
 
     const updatePayload: Record<string, any> = {
       updated_at: new Date().toISOString(),
       description: storedDescription,
     };
 
-    if (name !== undefined) updatePayload.name = name.trim();
-    if (pair !== undefined) updatePayload.pair = pair.trim();
-    if (timeframe !== undefined) updatePayload.timeframe = timeframe.trim();
-    if (min_deposit !== undefined) updatePayload.min_deposit = Number(min_deposit);
-    if (currency_type !== undefined) updatePayload.currency_type = currency_type;
-    if (download_url !== undefined) updatePayload.download_url = download_url?.trim() || null;
-    if (version !== undefined) updatePayload.version = version.trim();
-    if (is_active !== undefined) updatePayload.is_active = is_active;
+    if (name !== undefined) updatePayload.name = String(name).trim();
+    if (pair !== undefined) updatePayload.pair = String(pair).trim();
+    if (timeframe !== undefined) updatePayload.timeframe = String(timeframe).trim();
+    if (min_deposit !== undefined && min_deposit !== null) {
+      const parsedNum = Number(min_deposit);
+      if (!isNaN(parsedNum)) {
+        updatePayload.min_deposit = parsedNum;
+      }
+    }
+    if (currency_type !== undefined) updatePayload.currency_type = String(currency_type).trim().toUpperCase();
+    if (download_url !== undefined) updatePayload.download_url = download_url ? String(download_url).trim() : null;
+    if (version !== undefined) updatePayload.version = String(version).trim();
+    if (is_active !== undefined) updatePayload.is_active = Boolean(is_active);
 
     const { data, error } = await supabaseAdmin
       .from("eas")
@@ -172,12 +197,17 @@ export async function PATCH(req: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return noCacheResponse({ error: error.message }, 500);
     }
 
-    return NextResponse.json({ success: true, ea: parseEAMetadata(data) });
+    try {
+      revalidatePath("/");
+      revalidatePath("/admin");
+    } catch {}
+
+    return noCacheResponse({ success: true, ea: parseEAMetadata(data) });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return noCacheResponse({ error: err.message }, 500);
   }
 }
 
@@ -186,23 +216,29 @@ export async function DELETE(req: NextRequest) {
   try {
     const admin = await getCurrentAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return noCacheResponse({ error: "Unauthorized" }, 401);
     }
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json({ error: "Missing EA id" }, { status: 400 });
+      return noCacheResponse({ error: "Missing EA id" }, 400);
     }
 
     const { error } = await supabaseAdmin.from("eas").delete().eq("id", id);
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return noCacheResponse({ error: error.message }, 500);
     }
 
-    return NextResponse.json({ success: true });
+    try {
+      revalidatePath("/");
+      revalidatePath("/admin");
+    } catch {}
+
+    return noCacheResponse({ success: true });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return noCacheResponse({ error: err.message }, 500);
   }
 }
+

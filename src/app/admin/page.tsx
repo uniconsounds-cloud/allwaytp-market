@@ -298,7 +298,10 @@ export default function AdminDashboard() {
   const fetchEAs = async () => {
     try {
       setLoadingEAs(true);
-      const res = await fetch("/api/admin/eas");
+      const res = await fetch(`/api/admin/eas?_t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
       const data = await res.json();
       if (data.eas) {
         setEaList(data.eas);
@@ -587,10 +590,10 @@ export default function AdminDashboard() {
         description: ea.description || "",
         pair: ea.pair,
         timeframe: ea.timeframe,
-        min_deposit: ea.min_deposit,
-        currency_type: ea.currency_type,
+        min_deposit: Number(ea.min_deposit) || 0,
+        currency_type: ea.currency_type || "USD",
         download_url: ea.download_url || "",
-        version: ea.version,
+        version: ea.version || "1.0.0",
         is_active: ea.is_active,
         images: [...currentImgs],
         duration_days: days,
@@ -621,6 +624,7 @@ export default function AdminDashboard() {
   const handleSaveEA = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let savedEA: EAProduct | null = null;
       if (editingEA) {
         // PATCH
         const res = await fetch("/api/admin/eas", {
@@ -631,11 +635,12 @@ export default function AdminDashboard() {
             ...eaFormData,
           }),
         });
+        const d = await res.json();
         if (!res.ok) {
-          const d = await res.json();
           alert(`เกิดข้อผิดพลาด: ${d.error}`);
           return;
         }
+        savedEA = d.ea;
       } else {
         // POST
         const res = await fetch("/api/admin/eas", {
@@ -643,15 +648,26 @@ export default function AdminDashboard() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(eaFormData),
         });
+        const d = await res.json();
         if (!res.ok) {
-          const d = await res.json();
           alert(`เกิดข้อผิดพลาด: ${d.error}`);
           return;
+        }
+        savedEA = d.ea;
+      }
+
+      // Immediately update local state so changes appear on screen instantly
+      if (savedEA) {
+        if (editingEA) {
+          setEaList((prev) => prev.map((item) => (item.id === savedEA!.id ? savedEA! : item)));
+        } else {
+          setEaList((prev) => [savedEA!, ...prev]);
         }
       }
 
       setShowEAModal(false);
       await fetchEAs();
+      alert(`บันทึกข้อมูลสินค้า "${savedEA?.name || eaFormData.name}" สำเร็จเรียบร้อยแล้ว!`);
     } catch (err: any) {
       alert(`บันทึกสินค้า EA ไม่สำเร็จ: ${err.message}`);
     }
@@ -1859,20 +1875,45 @@ export default function AdminDashboard() {
                   <label className="block font-semibold text-gray-300 mb-1.5">ทุนขั้นต่ำ ($)</label>
                   <input
                     type="number"
-                    value={eaFormData.min_deposit}
-                    onChange={(e) => setEaFormData({ ...eaFormData, min_deposit: Number(e.target.value) })}
+                    min="0"
+                    step="any"
+                    placeholder="เช่น 100 หรือ 1500"
+                    value={eaFormData.min_deposit === 0 ? "0" : (eaFormData.min_deposit || "")}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEaFormData({ ...eaFormData, min_deposit: val === "" ? 0 : Number(val) });
+                    }}
                     className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
                   />
                 </div>
 
                 <div>
                   <label className="block font-semibold text-gray-300 mb-1.5">สกุลเงินบัญชี</label>
-                  <input
-                    type="text"
-                    value={eaFormData.currency_type}
-                    onChange={(e) => setEaFormData({ ...eaFormData, currency_type: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-                  />
+                  <div className="flex gap-1.5">
+                    <input
+                      type="text"
+                      placeholder="USD หรือ CENT"
+                      value={eaFormData.currency_type}
+                      onChange={(e) => setEaFormData({ ...eaFormData, currency_type: e.target.value.toUpperCase() })}
+                      className="flex-1 px-3 py-2 rounded-xl bg-[#0C0E14] border border-gray-700 text-white text-xs focus:outline-none focus:border-[#D4AF37] font-mono"
+                    />
+                    <div className="flex gap-1">
+                      {["USD", "CENT"].map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setEaFormData({ ...eaFormData, currency_type: c })}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                            eaFormData.currency_type === c
+                              ? "bg-[#D4AF37]/25 border-[#D4AF37] text-[#D4AF37]"
+                              : "bg-[#0C0E14] border-gray-700 text-gray-400 hover:text-white"
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 

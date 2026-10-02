@@ -17,6 +17,7 @@ export interface EAItem {
   type: string;
   tagline: string;
   features: string[];
+  version?: string;
 }
 
 export default function EACard({ ea }: { ea: EAItem }) {
@@ -47,7 +48,7 @@ export default function EACard({ ea }: { ea: EAItem }) {
             <span className="bg-black/70 px-2 py-0.5 rounded border border-gray-700/60 font-semibold text-[#D4AF37]">
               {ea.tagline}
             </span>
-            <span className="text-gray-400">v1.2.0</span>
+            <span className="text-gray-400">v{ea.version || "1.0.0"}</span>
           </div>
         </div>
 

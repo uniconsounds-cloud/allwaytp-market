@@ -143,6 +143,40 @@
   - UI รองรับ 6 ตัวเลือกและปฏิทินอย่างสมบูรณ์ โทนสีทองหรูหรา ธีม Dark Gold สอดคล้องกับระบบ
   - ทดสอบ `npm run build` ผ่านสมบูรณ์ (Code 0, Type check & Bundle ผ่านฉลุย)
 
+---
+
+### [2026-10-02] โดย Antigravity
+- **ปัญหาที่พบและแก้ไข:**
+  - คุณโจ้แจ้งว่าแก้ทุน (min_deposit) ในหน้าต่างแก้ไขสินค้าแล้ว ไม่เปลี่ยนหลังจากบันทึก
+  - **สาเหตุหลัก:**
+    1. เบราว์เซอร์และ Next.js Data Cache มีการแคช `GET /api/admin/eas` ทำให้เมื่อบันทึกแล้วเรียก `fetchEAs()` ดึงข้อมูลเก่าที่แคชไว้กลับมาแสดง
+    2. หน้าแรก (`/`) และหน้า Admin ไม่ได้ตั้ง `revalidatePath` เมื่อบันทึกสินค้า
+    3. การอัปเดต state ในหน้า Admin ไม่ได้นำค่าสินค้าที่บันทึกสำเร็จมาอัปเดตเข้า State ใน React โดยตรงทันที
+  - **การปรับปรุงและแก้ไขอย่างละเอียด:**
+    1. **`src/app/api/admin/eas/route.ts`:**
+       - เพิ่ม Header ป้องกันแคชแบบสมบูรณ์: `Cache-Control: no-store, no-cache, must-revalidate, max-age=0` ทุกคำขอ (GET, POST, PATCH, DELETE)
+       - เพิ่ม `revalidatePath("/")` และ `revalidatePath("/admin")` ทุกครั้งที่สร้าง, แก้ไข หรือลบสินค้า
+       - ปรับปรุงการแปลงค่าตัวเลข `min_deposit` และตัดช่องว่างข้อความให้รัดกุม รองรับทุกรูปแบบค่าตัวเลขและสกุลเงิน
+    2. **`src/app/admin/page.tsx`:**
+       - ปรับ `fetchEAs()` ให้ส่งพารามิเตอร์ `_t=${Date.now()}` และ Header `cache: "no-store"` ป้องกันเบราว์เซอร์แคช 100%
+       - ใน `handleSaveEA()`: อัปเดต React State (`setEaList`) ด้วยข้อมูลสินค้าล่าสุดที่ตอบกลับมาจากเซิร์ฟเวอร์ทันที ทำให้เห็นการเปลี่ยนแปลงบนหน้าจอทันทีโดยไม่ต้องรอ
+       - ปรับปรุงช่องกรอก `min_deposit` รองรับค่า 0 และตัวเลขทศนิยม ป้องกันปัญหา NaN
+       - ปรับปรุงช่อง `currency_type` ให้มีปุ่มกดเลือก `USD` / `CENT` ได้สะดวกรวดเร็ว
+       - เพิ่มการแจ้งเตือน Alert เมื่อบันทึกสำเร็จ เพื่อความมั่นใจในการใช้งาน
+    3. **`src/app/page.tsx` & `src/components/EACard.tsx`:**
+       - เพิ่ม `export const revalidate = 0;` ป้องกันเซิร์ฟเวอร์แคชข้อมูลหน้าแรก
+       - เชื่อมโยงข้อมูล `min_deposit`, `currency_type`, `version`, `pair`, `timeframe`, รูปภาพ และคำอธิบายลงในการ์ดสินค้าหน้าแรกอย่างสมบูรณ์
+- **ไฟล์ที่เปลี่ยน:**
+  - `src/app/api/admin/eas/route.ts`
+  - `src/app/admin/page.tsx`
+  - `src/app/page.tsx`
+  - `src/components/EACard.tsx`
+  - `AI_HANDOFF.md`
+- **ข้อสรุปที่ยืนยันแล้ว:**
+  - ตรวจสอบฐานข้อมูล Supabase พบว่าข้อมูลบันทึกได้อย่างถูกต้อง
+  - ทดสอบ `npm run build` ผ่านสมบูรณ์ (Compiled successfully, Code 0)
+
+
 
 
 

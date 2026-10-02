@@ -4,6 +4,7 @@ import EACard, { EAItem } from "@/components/EACard";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function Home() {
   const initialEaList: EAItem[] = [
@@ -23,6 +24,7 @@ export default async function Home() {
       minDeposit: "100 USD",
       type: "Standard / Dollar",
       tagline: "ADVANCED RECONNAISSANCE UNIT",
+      version: "1.0.0",
       features: [
         "ผสานพลัง AI + Master Risk Control",
         "เทคโนโลยี Thai + Japan Development Team",
@@ -45,6 +47,7 @@ export default async function Home() {
       minDeposit: "500 USD (50,000 USC)",
       type: "Cent Account",
       tagline: "HEAVY COMBAT & RECOVERY UNIT",
+      version: "1.0.0",
       features: [
         "กลยุทธ์เฉพาะสำหรับพอร์ต Cent ความจุสูง",
         "ระบบกระจาย Lot แบบ Dynamic Grid",
@@ -67,6 +70,7 @@ export default async function Home() {
       minDeposit: "1,500 USD",
       type: "Dollar Account",
       tagline: "ELITE SPEC-OPS QUANT TRADING",
+      version: "1.0.0",
       features: [
         "วิเคราะห์โครงสร้างตลาดระดับสถาบันบน H1",
         "ระบบ Smart Trailing Lock กำไรต่อเนื่อง",
@@ -107,6 +111,12 @@ export default async function Home() {
           parsedImages = found.images;
         }
 
+        const depositVal = Number(found.min_deposit);
+        const currencyVal = found.currency_type || "USD";
+        const minDepositText = currencyVal === "CENT"
+          ? `${depositVal.toLocaleString()} USD (${(depositVal * 100).toLocaleString()} USC)`
+          : `${depositVal.toLocaleString()} ${currencyVal}`;
+
         return {
           ...initEa,
           name: found.name || initEa.name,
@@ -114,7 +124,9 @@ export default async function Home() {
           images: parsedImages,
           pair: found.pair || initEa.pair,
           timeframe: found.timeframe || initEa.timeframe,
-          minDeposit: `${Number(found.min_deposit).toLocaleString()} ${found.currency_type || "USD"}`,
+          minDeposit: minDepositText,
+          type: currencyVal === "CENT" ? "Cent Account (พอร์ต Cent)" : "Dollar Account (พอร์ต Standard)",
+          version: found.version || initEa.version || "1.0.0",
         };
       });
     }
